@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH --job-name=1model
+#SBATCH --output="log/res_mse_100.out"
+#SBATCH --error="error/res_mse_100.err"
+#SBATCH --partition=gpux2
+#SBATCH --nodes=1
+#SBATCH --time=24
+
+echo Running
+module load opence/1.5.1
+echo Module loaded
+python train_resnet_mse.py -e 100  -o "outputs/100_epochs_all_sides_plotted"
+echo Done

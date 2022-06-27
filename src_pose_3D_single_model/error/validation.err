@@ -1,0 +1,48 @@
+Traceback (most recent call last):
+  File "/home/asravan2/vae_practice/src_pose_3D_single_model/validate.py", line 53, in <module>
+    model.load_state_dict(torch.load('resnet_pose_220621.pt'))
+  File "/opt/miniconda3/envs/opence-v1.5.1/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1482, in load_state_dict
+    raise RuntimeError('Error(s) in loading state_dict for {}:\n\t{}'.format(
+RuntimeError: Error(s) in loading state_dict for DataParallel:
+	size mismatch for module.decoder1.decoder.weight: copying a param with shape torch.Size([288, 128]) from checkpoint, the shape in current model is torch.Size([240, 128]).
+	size mismatch for module.decoder1.decoder.bias: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder1.bn0.weight: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder1.bn0.bias: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder1.bn0.running_mean: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder1.bn0.running_var: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder1.FC1.weight: copying a param with shape torch.Size([144, 288]) from checkpoint, the shape in current model is torch.Size([120, 240]).
+	size mismatch for module.decoder1.FC1.bias: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder1.bn1.weight: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder1.bn1.bias: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder1.bn1.running_mean: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder1.bn1.running_var: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder1.FC2.weight: copying a param with shape torch.Size([72, 144]) from checkpoint, the shape in current model is torch.Size([60, 120]).
+	size mismatch for module.decoder1.FC2.bias: copying a param with shape torch.Size([72]) from checkpoint, the shape in current model is torch.Size([60]).
+	size mismatch for module.decoder2.decoder.weight: copying a param with shape torch.Size([288, 128]) from checkpoint, the shape in current model is torch.Size([240, 128]).
+	size mismatch for module.decoder2.decoder.bias: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder2.bn0.weight: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder2.bn0.bias: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder2.bn0.running_mean: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder2.bn0.running_var: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder2.FC1.weight: copying a param with shape torch.Size([144, 288]) from checkpoint, the shape in current model is torch.Size([120, 240]).
+	size mismatch for module.decoder2.FC1.bias: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder2.bn1.weight: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder2.bn1.bias: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder2.bn1.running_mean: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder2.bn1.running_var: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder2.FC2.weight: copying a param with shape torch.Size([72, 144]) from checkpoint, the shape in current model is torch.Size([60, 120]).
+	size mismatch for module.decoder2.FC2.bias: copying a param with shape torch.Size([72]) from checkpoint, the shape in current model is torch.Size([60]).
+	size mismatch for module.decoder3.decoder.weight: copying a param with shape torch.Size([288, 128]) from checkpoint, the shape in current model is torch.Size([240, 128]).
+	size mismatch for module.decoder3.decoder.bias: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder3.bn0.weight: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder3.bn0.bias: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder3.bn0.running_mean: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder3.bn0.running_var: copying a param with shape torch.Size([288]) from checkpoint, the shape in current model is torch.Size([240]).
+	size mismatch for module.decoder3.FC1.weight: copying a param with shape torch.Size([144, 288]) from checkpoint, the shape in current model is torch.Size([120, 240]).
+	size mismatch for module.decoder3.FC1.bias: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder3.bn1.weight: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder3.bn1.bias: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder3.bn1.running_mean: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder3.bn1.running_var: copying a param with shape torch.Size([144]) from checkpoint, the shape in current model is torch.Size([120]).
+	size mismatch for module.decoder3.FC2.weight: copying a param with shape torch.Size([72, 144]) from checkpoint, the shape in current model is torch.Size([60, 120]).
+	size mismatch for module.decoder3.FC2.bias: copying a param with shape torch.Size([72]) from checkpoint, the shape in current model is torch.Size([60]).

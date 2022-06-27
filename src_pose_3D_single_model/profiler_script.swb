@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH --job-name=profiler
+#SBATCH --output="log/profiler.out"
+#SBATCH --error="error/profiler.err"
+#SBATCH --partition=gpux2
+#SBATCH --nodes=1
+#SBATCH --time=24
+
+echo Running
+module load opence/1.5.1
+echo Module loaded
+python profile_train_resnet_mse.py 
+echo Done

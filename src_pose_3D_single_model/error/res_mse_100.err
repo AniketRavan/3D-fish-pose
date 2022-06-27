@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/asravan2/vae_practice/src_pose_3D_single_model/train_resnet_mse.py", line 51, in <module>
+    pose_files = sorted(os.listdir(pose_folder))
+FileNotFoundError: [Errno 2] No such file or directory: '../lookup_table_head/training_data_3D_pose_new/annotations_220615_pose_tensor/'

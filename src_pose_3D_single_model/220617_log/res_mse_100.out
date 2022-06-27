@@ -1,0 +1,216 @@
+Running
+Module loaded
+2GPUs are available!
+Using 2 GPUs!
+Epoch 1 of 70
+Train Loss: 144505.7295
+Val Loss: 1137.7930
+Epoch 2 of 70
+Train Loss: 311.7152
+Val Loss: 274.8039
+Epoch 3 of 70
+Train Loss: 377.4426
+Val Loss: 246.7456
+Epoch 4 of 70
+Train Loss: 187.8902
+Val Loss: 394.7744
+Epoch 5 of 70
+Train Loss: 131.8525
+Val Loss: 130.9587
+Epoch 6 of 70
+Train Loss: 104.0209
+Val Loss: 242.8766
+Epoch 7 of 70
+Train Loss: 89.1862
+Val Loss: 133.8769
+Epoch 8 of 70
+Train Loss: 82.8399
+Val Loss: 126.0474
+Epoch 9 of 70
+Train Loss: 80.4048
+Val Loss: 81.7921
+Epoch 10 of 70
+Train Loss: 75.7984
+Val Loss: 98.8966
+Epoch 11 of 70
+Train Loss: 70.6077
+Val Loss: 109.1742
+Epoch 12 of 70
+Train Loss: 66.9445
+Val Loss: 126.1540
+Epoch 13 of 70
+Train Loss: 63.4544
+Val Loss: 107.9211
+Epoch 14 of 70
+Train Loss: 60.0126
+Val Loss: 149.1362
+Epoch 15 of 70
+Train Loss: 57.9756
+Val Loss: 89.7545
+Epoch 16 of 70
+Train Loss: 57.0966
+Val Loss: 154.2609
+Epoch 17 of 70
+Train Loss: 55.8892
+Val Loss: 116.6836
+Epoch 18 of 70
+Train Loss: 54.1091
+Val Loss: 127.6106
+Epoch 19 of 70
+Train Loss: 53.6277
+Val Loss: 66.3386
+Epoch 20 of 70
+Train Loss: 52.3892
+Val Loss: 74.2752
+Epoch 21 of 70
+Train Loss: 50.7863
+Val Loss: 110.4636
+Epoch 22 of 70
+Train Loss: 50.7057
+Val Loss: 81.2738
+Epoch 23 of 70
+Train Loss: 48.6463
+Val Loss: 142.9564
+Epoch 24 of 70
+Train Loss: 47.6740
+Val Loss: 70.9194
+Epoch 25 of 70
+Train Loss: 46.4521
+Val Loss: 71.7108
+Epoch 26 of 70
+Train Loss: 46.5328
+Val Loss: 134.7342
+Epoch 27 of 70
+Train Loss: 44.9572
+Val Loss: 45.8683
+Epoch 28 of 70
+Train Loss: 45.0042
+Val Loss: 66.2107
+Epoch 29 of 70
+Train Loss: 44.3567
+Val Loss: 64.4760
+Epoch 30 of 70
+Train Loss: 42.4427
+Val Loss: 30.7316
+Epoch 31 of 70
+Train Loss: 43.1138
+Val Loss: 96.4801
+Epoch 32 of 70
+Train Loss: 42.7970
+Val Loss: 29.1180
+Epoch 33 of 70
+Train Loss: 41.8118
+Val Loss: 75.0517
+Epoch 34 of 70
+Train Loss: 41.6307
+Val Loss: 47.0070
+Epoch 35 of 70
+Train Loss: 41.6958
+Val Loss: 84.2243
+Epoch 36 of 70
+Train Loss: 40.9272
+Val Loss: 30.7618
+Epoch 37 of 70
+Train Loss: 40.7340
+Val Loss: 42.4076
+Epoch 38 of 70
+Train Loss: 40.6883
+Val Loss: 44.2606
+Epoch 39 of 70
+Train Loss: 39.4537
+Val Loss: 67.4358
+Epoch 40 of 70
+Train Loss: 39.7874
+Val Loss: 34.8330
+Epoch 41 of 70
+Train Loss: 38.8617
+Val Loss: 39.6072
+Epoch 42 of 70
+Train Loss: 38.8889
+Val Loss: 98.0607
+Epoch 43 of 70
+Train Loss: 39.4127
+Val Loss: 31.1274
+Epoch 44 of 70
+Train Loss: 38.5191
+Val Loss: 62.9206
+Epoch 45 of 70
+Train Loss: 38.3787
+Val Loss: 35.3775
+Epoch 46 of 70
+Train Loss: 37.4055
+Val Loss: 34.1243
+Epoch 47 of 70
+Train Loss: 36.7780
+Val Loss: 61.6840
+Epoch 48 of 70
+Train Loss: 38.1815
+Val Loss: 40.7449
+Epoch 49 of 70
+Train Loss: 36.1842
+Val Loss: 37.5149
+Epoch 50 of 70
+Train Loss: 36.2032
+Val Loss: 39.7795
+Epoch 51 of 70
+Train Loss: 36.2276
+Val Loss: 45.9926
+Epoch 52 of 70
+Train Loss: 36.0369
+Val Loss: 28.6456
+Epoch 53 of 70
+Train Loss: 36.7282
+Val Loss: 51.9276
+Epoch 54 of 70
+Train Loss: 36.0811
+Val Loss: 49.1333
+Epoch 55 of 70
+Train Loss: 35.7800
+Val Loss: 18.6316
+Epoch 56 of 70
+Train Loss: 36.2979
+Val Loss: 40.3444
+Epoch 57 of 70
+Train Loss: 34.8621
+Val Loss: 49.1598
+Epoch 58 of 70
+Train Loss: 35.2369
+Val Loss: 38.6536
+Epoch 59 of 70
+Train Loss: 35.7797
+Val Loss: 75.2336
+Epoch 60 of 70
+Train Loss: 34.3691
+Val Loss: 29.9965
+Epoch 61 of 70
+Train Loss: 33.7555
+Val Loss: 20.1536
+Epoch 62 of 70
+Train Loss: 34.7261
+Val Loss: 37.9484
+Epoch 63 of 70
+Train Loss: 33.9890
+Val Loss: 35.1649
+Epoch 64 of 70
+Train Loss: 34.4537
+Val Loss: 19.2077
+Epoch 65 of 70
+Train Loss: 33.7351
+Val Loss: 43.4912
+Epoch 66 of 70
+Train Loss: 34.9435
+Val Loss: 38.2858
+Epoch 67 of 70
+Train Loss: 33.8279
+Val Loss: 48.6424
+Epoch 68 of 70
+Train Loss: 34.1906
+Val Loss: 38.4314
+Epoch 69 of 70
+Train Loss: 34.1060
+Val Loss: 48.2211
+Epoch 70 of 70
+Train Loss: 34.9046
+Val Loss: 26.7724
+<class 'list'>
+Done
