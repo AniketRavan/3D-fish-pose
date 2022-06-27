@@ -1,0 +1,446 @@
+MATLAB is selecting SOFTWARE OPENGL rendering.
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2017 The MathWorks, Inc.
+                   R2017b (9.3.0.713579) 64-bit (glnxa64)
+                             September 14, 2017
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+Createed directories
+
+ans =
+
+    '1 of 220'
+
+
+ans =
+
+    '2 of 220'
+
+
+ans =
+
+    '3 of 220'
+
+
+ans =
+
+    '4 of 220'
+
+
+ans =
+
+    '5 of 220'
+
+
+ans =
+
+    '6 of 220'
+
+
+ans =
+
+    '7 of 220'
+
+
+ans =
+
+    '8 of 220'
+
+
+ans =
+
+    '9 of 220'
+
+
+ans =
+
+    '10 of 220'
+
+
+ans =
+
+    '11 of 220'
+
+
+ans =
+
+    '12 of 220'
+
+
+ans =
+
+    '13 of 220'
+
+
+ans =
+
+    '14 of 220'
+
+
+ans =
+
+    '15 of 220'
+
+
+ans =
+
+    '16 of 220'
+
+
+ans =
+
+    '17 of 220'
+
+
+ans =
+
+    '18 of 220'
+
+
+ans =
+
+    '19 of 220'
+
+
+ans =
+
+    '20 of 220'
+
+
+ans =
+
+    '21 of 220'
+
+
+ans =
+
+    '22 of 220'
+
+
+ans =
+
+    '23 of 220'
+
+
+ans =
+
+    '24 of 220'
+
+
+ans =
+
+    '25 of 220'
+
+
+ans =
+
+    '26 of 220'
+
+
+ans =
+
+    '27 of 220'
+
+
+ans =
+
+    '28 of 220'
+
+
+ans =
+
+    '29 of 220'
+
+
+ans =
+
+    '30 of 220'
+
+
+ans =
+
+    '31 of 220'
+
+
+ans =
+
+    '32 of 220'
+
+
+ans =
+
+    '33 of 220'
+
+
+ans =
+
+    '34 of 220'
+
+
+ans =
+
+    '35 of 220'
+
+
+ans =
+
+    '36 of 220'
+
+
+ans =
+
+    '37 of 220'
+
+
+ans =
+
+    '38 of 220'
+
+
+ans =
+
+    '39 of 220'
+
+
+ans =
+
+    '40 of 220'
+
+
+ans =
+
+    '41 of 220'
+
+
+ans =
+
+    '42 of 220'
+
+
+ans =
+
+    '43 of 220'
+
+
+ans =
+
+    '44 of 220'
+
+
+ans =
+
+    '45 of 220'
+
+
+ans =
+
+    '46 of 220'
+
+
+ans =
+
+    '47 of 220'
+
+
+ans =
+
+    '48 of 220'
+
+
+ans =
+
+    '49 of 220'
+
+
+ans =
+
+    '50 of 220'
+
+
+ans =
+
+    '51 of 220'
+
+
+ans =
+
+    '52 of 220'
+
+
+ans =
+
+    '53 of 220'
+
+
+ans =
+
+    '54 of 220'
+
+
+ans =
+
+    '55 of 220'
+
+
+ans =
+
+    '56 of 220'
+
+
+ans =
+
+    '57 of 220'
+
+
+ans =
+
+    '58 of 220'
+
+
+ans =
+
+    '59 of 220'
+
+
+ans =
+
+    '60 of 220'
+
+
+ans =
+
+    '61 of 220'
+
+
+ans =
+
+    '62 of 220'
+
+
+ans =
+
+    '63 of 220'
+
+
+ans =
+
+    '64 of 220'
+
+
+ans =
+
+    '65 of 220'
+
+
+ans =
+
+    '66 of 220'
+
+
+ans =
+
+    '67 of 220'
+
+
+ans =
+
+    '68 of 220'
+
+
+ans =
+
+    '69 of 220'
+
+
+ans =
+
+    '70 of 220'
+
+
+ans =
+
+    '71 of 220'
+
+
+ans =
+
+    '72 of 220'
+
+
+ans =
+
+    '73 of 220'
+
+
+ans =
+
+    '74 of 220'
+
+
+ans =
+
+    '75 of 220'
+
+
+ans =
+
+    '76 of 220'
+
+
+ans =
+
+    '77 of 220'
+
+
+ans =
+
+    '78 of 220'
+
+
+ans =
+
+    '79 of 220'
+
+
+ans =
+
+    '80 of 220'
+
+
+ans =
+
+    '81 of 220'
+
+
+ans =
+
+    '82 of 220'
+
+
+ans =
+
+    '83 of 220'
+
+
+ans =
+
+    '84 of 220'
+
+
+ans =
+
+    '85 of 220'
+
+{Index exceeds matrix dimensions.
+
+Error in runme_validation (line 33)
+                im_b = coor_mat_mf.fish_in_vid.b{1}{1}{n};
+
+Error in run (line 91)
+evalin('caller', strcat(script, ';'));
+} 
+>> 
