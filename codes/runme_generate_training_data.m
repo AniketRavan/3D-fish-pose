@@ -2,9 +2,9 @@
 % Generates training dataset for side views 
 % Last modified: 12th of May, 2022
 
-load('../proj_params_101019_corrected_new')
-load('../lut_b_tail')
-load('../lut_s_tail')
+load('proj_params_101019_corrected_new')
+load('lut_b_tail')
+load('lut_s_tail')
 path{1} = '../results_all_er';
 % path{2} = '../results_fs';
 % path{3} = '../results_ob';
@@ -12,7 +12,7 @@ idx = 0;
 x_complete = [];
 swimtype = 'er';
 imageSizeX = 141; imageSizeY = 141;
-date = '220628';
+date = '220629';
 mkdir(['../training_data_3D_pose_shifted/annotations_',date,'_pose'])
 mkdir(['../training_data_3D_pose_shifted/annotations_',date,'_crop_coor'])
 mkdir(['../training_data_3D_pose_shifted/annotations_',date,'_eye_coor'])

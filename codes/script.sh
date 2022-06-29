@@ -6,4 +6,4 @@
 #SBATCH -J gen_train
 #SBATCH -o gen_train_log
 module load MATLAB/2017b
-matlab -nodesktop -r "run('runme.m');exit;"
+matlab -nodesktop -r "run('runme_generate_training_data.m');exit;"

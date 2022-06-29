@@ -3,8 +3,8 @@
 % Last modified: 12th of May, 2022
 
 load('proj_params_101019_corrected_new')
-load('../lut_b_tail')
-load('../lut_s_tail')
+load('lut_b_tail')
+load('lut_s_tail')
 path{1} = '../results_all_er';
 % path{2} = '../results_fs';
 % path{3} = '../results_ob';
