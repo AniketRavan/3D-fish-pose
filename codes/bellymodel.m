@@ -1,8 +1,8 @@
 function [belly_model] = bellymodel(x, y, z, seglen, brightness, size_lut)
 
-belly_w = seglen * 0.5527; %0.5030;
-belly_l = seglen * 1.2000; %1.5970; 
-belly_h = seglen * 0.5231; %0.6294; % 0.55
+belly_w = seglen * (0.5527); %0.5030;
+belly_l = seglen * (1.2000); %1.5970; 
+belly_h = seglen * (0.5231); %0.6294; % 0.55
 c_belly = 1.0541;
 % R = rotz(heading)*roty(inclination)*rotx(roll);
 pt_original(:,2) = [size_lut/2; size_lut/2; size_lut/2];

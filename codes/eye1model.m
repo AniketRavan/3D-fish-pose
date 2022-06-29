@@ -1,5 +1,5 @@
 function [eye1_model,eye1_c] = eye1model(x, y, z, seglen, brightness, size_lut)
-d_eye = seglen * 0.9056;% 1.4332; %0.83
+d_eye = seglen * (0.9056);% 1.4332; %0.83
 c_eyes = 1.4130; %1.3015;
 eye1_w = seglen * 0.2097; %0.1671; % 0.35
 eye1_l = seglen * 0.3006; %0.2507; % 0.45

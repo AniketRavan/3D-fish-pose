@@ -1,8 +1,8 @@
 function [head_model] = headmodel(x, y, z, seglen, brightness, size_lut)
 
-head_w = seglen * 0.7462; %0.8197;  % 0.6
-head_l = seglen * 0.7475; %0.8196; % 1/sqrt(2)
-head_h = seglen * 0.6426; %0.7622;  % 0.7/sqrt(2)
+head_w = seglen * (0.7462); %0.8197;  % 0.6
+head_l = seglen * (0.7475); %0.8196; % 1/sqrt(2)
+head_h = seglen * (0.6426); %0.7622;  % 0.7/sqrt(2)
 c_head = 1.3371; %1.1296;
 pt_original(:,2) = [size_lut/2; size_lut/2 ; size_lut/2];
 pt_original(:,1) = pt_original(:,2) - [seglen; 0; 0];

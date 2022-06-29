@@ -41,19 +41,19 @@ coor_s2(:,end) = [];
 
 % Re-defining cropped coordinates for training images of dimensions
 % imageSizeY x imageSizeX
-crop_b(1) = round(coor_b(2,3)) - (imageSizeY - 1)/2 + round((rand - 0.5)*20);
+crop_b(1) = round(coor_b(2,3)) - (imageSizeY - 1)/2;
 crop_b(2) = crop_b(1) + imageSizeY - 1;
-crop_b(3) = round(coor_b(1,3)) - (imageSizeX - 1)/2 + round((rand - 0.5)*20);
+crop_b(3) = round(coor_b(1,3)) - (imageSizeX - 1)/2;
 crop_b(4) = crop_b(3) + imageSizeX - 1;
 
-crop_s1(1) = round(coor_s1(2,3)) - (imageSizeY - 1)/2 + round((rand - 0.5)*20);
+crop_s1(1) = round(coor_s1(2,3)) - (imageSizeY - 1)/2;
 crop_s1(2) = crop_s1(1) + imageSizeY - 1;
-crop_s1(3) = round(coor_s1(1,3)) - (imageSizeX - 1)/2 + round((rand - 0.5)*20);
+crop_s1(3) = round(coor_s1(1,3)) - (imageSizeX - 1)/2;
 crop_s1(4) = crop_s1(3) + imageSizeX - 1;
 
-crop_s2(1) = round(coor_s2(2,3)) - (imageSizeY - 1)/2 + round((rand - 0.5)*20);
+crop_s2(1) = round(coor_s2(2,3)) - (imageSizeY - 1)/2;
 crop_s2(2) = crop_s2(1) + imageSizeY - 1;
-crop_s2(3) = round(coor_s2(1,3)) - (imageSizeX - 1)/2 + round((rand - 0.5)*20);
+crop_s2(3) = round(coor_s2(1,3)) - (imageSizeX - 1)/2;
 crop_s2(4) = crop_s2(3) + imageSizeX - 1;
 
 annotated_b(1,:) = coor_b(1,:) - crop_b(3) + 1;
@@ -80,6 +80,13 @@ eye_s2(2,:) = eye_s2(2,:) - crop_s2(1) + 1;
 gray_b = view_b_lut_new_real_cpu(crop_b,coor_b,lut_b_tail,projection_b,imageSizeX,imageSizeY);
 gray_s1 = view_s_lut_new_real_cpu(crop_s1,coor_s1,lut_s_tail,projection_s1,imageSizeX,imageSizeY);
 gray_s2 = view_s_lut_new_real_cpu(crop_s2,coor_s2,lut_s_tail,projection_s2,imageSizeX,imageSizeY);
+
+imblurred = imgaussfilt(gray_b, 1);
+thresh_bw = graythresh(imblurred(imblurred>20))*0.42;
+bw = imbinarize(imblurred,thresh_bw);
+bw = imerode(bw,ones(2));
+bw = bwareaopen(bw, 100);
+cen = regionprops(bw, 'Centroid');
 
 % Subtract 1 for accordance with python's format
 eye_b = eye_b - 1; eye_s1 = eye_s1 - 1; eye_s2 = eye_s2 - 1;
