@@ -9,5 +9,5 @@
 echo Running
 module load opence/1.5.1
 echo Module loaded
-python validate.py -e 1  -o "outputs/validation"
+python runme_validate.py -e 1  -o "outputs/validation"
 echo Done

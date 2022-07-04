@@ -23,6 +23,7 @@ parser.add_argument('-o','--output_dir', default="outputs/pose_outputs", type=st
 args = vars(parser.parse_args())
 imageSizeX = 141
 imageSizeY = 141
+date = '220629'
 
 epochs = args['epochs']
 output_dir = args['output_dir']
@@ -47,19 +48,19 @@ if torch.cuda.device_count() > 1:
   model = nn.DataParallel(model)
 
 transform = transforms.Compose([transforms.ToTensor(), transforms.ConvertImageDtype(torch.float)])
-pose_folder = '../lookup_table_head/training_data_3D_pose_new/annotations_220615_pose_tensor/'
+pose_folder = '../lookup_table_head/training_data_3D_pose_new_/annotations_'+date+'_pose_tensor/'
 pose_files = sorted(os.listdir(pose_folder))
 pose_files_add = [pose_folder + file_name for file_name in pose_files]
 
-crop_coor_folder = '../lookup_table_head/training_data_3D_pose_new/annotations_220615_pose_tensor/'
+crop_coor_folder = '../lookup_table_head/training_data_3D_pose_new_/annotations_'+date+'_pose_tensor/'
 crop_coor_files = sorted(os.listdir(crop_coor_folder))
 crop_coor_files_add = [crop_coor_folder + file_name for file_name in crop_coor_files]
 
-eye_coor_folder = '../lookup_table_head/training_data_3D_pose_new/annotations_220615_eye_coor_tensor/'
+eye_coor_folder = '../lookup_table_head/training_data_3D_pose_new_/annotations_'+date+'_eye_coor_tensor/'
 eye_coor_files = sorted(os.listdir(eye_coor_folder))
 eye_coor_files_add = [eye_coor_folder + file_name for file_name in eye_coor_files]
 
-im_folder = '../lookup_table_head/training_data_3D_pose_new/images/'
+im_folder = '../lookup_table_head/training_data_3D_pose_new_/images/'
 im_files = sorted(os.listdir(im_folder))
 im_files_add = [im_folder + file_name for file_name in im_files]
 
@@ -192,7 +193,7 @@ for epoch in range(epochs):
     print(f"Train Loss: {train_epoch_loss:.4f}",flush=True)
     print(f"Val Loss: {val_epoch_loss:.4f}",flush=True)
 
-torch.save(model.state_dict(), 'resnet_pose_220626.pt')
+torch.save(model.state_dict(), 'resnet_pose_'+date+'_.pt')
 print(type(train_pose_loss_array))
 
 plt.plot(train_loss[20:], color='green')
