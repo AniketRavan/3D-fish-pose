@@ -18,7 +18,7 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-e','--epochs',default=10, type=int, help='number of epochs to train the VAE for')
-parser.add_argument('-o','--output_dir', default="outputs/220704", type=str, help='path to store output images and plots')
+parser.add_argument('-o','--output_dir', default="outputs/220704_old_model", type=str, help='path to store output images and plots')
 
 args = vars(parser.parse_args())
 imageSizeX = 141
@@ -35,7 +35,7 @@ if (not os.path.isdir(output_dir)):
     print('Creating new directory to store output images')
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model = resnet18(5, 12, activation='leaky_relu').to(device)
+model = resnet18(3, 12, activation='leaky_relu').to(device)
 
 n_cuda = torch.cuda.device_count()
 if (torch.cuda.is_available()):
@@ -75,14 +75,6 @@ val_loader = DataLoader(val_data, batch_size=batch_size,shuffle=False,num_worker
 optimizer = optim.Adam(model.parameters(), lr=lr)
 criterion = nn.MSELoss(reduction='sum')
 
-x = torch.arange(0,imageSizeX)
-y = torch.arange(0,imageSizeY)
-x_grid, y_grid = torch.meshgrid(x,y)
-im_grid = torch.zeros(batch_size,2,imageSizeY,imageSizeX)
-im_grid[0,:,:] = x_grid
-im_grid[1,:,:] = y_grid
-
-
 def final_loss(mse_loss, mu, logvar):
     MSE = mse_loss
     KLD = -0.5*torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
@@ -96,15 +88,18 @@ def fit(model, dataloader):
     #for i, data in enumerate(dataloader):
     for i, data in tqdm(enumerate(dataloader), total=int(len(train_data)/dataloader.batch_size)):
         im_three_channels, pose_data, eye_coor_data, crop_coor_data = data
-        im_five_channels = torch.cat((im_three_channels, im_grid), 1)
-        im_five_channels = im_five_channels.to(device)
+        im_three_channels = im_three_channels.to(device)
         pose_data = pose_data.to(device)
         eye_coor_data = eye_coor_data.to(device)
         crop_coor_data = crop_coor_data.to(device)
         optimizer.zero_grad()
-        pose_recon_b, pose_recon_s1, pose_recon_s2 = model(im_five_channels)
+        pose_recon_b, pose_recon_s1, pose_recon_s2 = model(im_three_channels)
         pose_loss = criterion(pose_recon_b[:,:,0:10], pose_data[:,:,0:10]) + criterion(pose_recon_s1[:,:,0:10], pose_data[:,:,10:20]) + criterion(pose_recon_s2[:,:,0:10], pose_data[:,:,20:30])
-        eye_loss = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]) + criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]) + criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
+        eye_loss_b = torch.min(criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]), criterion(pose_recon_b[:,:,10:12], torch.flip(eye_coor_data[:,:,0:2],(0,))))
+        eye_loss_s1 = torch.min(criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]), criterion(pose_recon_s1[:,:,10:12], torch.flip(eye_coor_data[:,:,2:4],(0,))))
+        eye_loss_s2 = torch.min(criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6]), criterion(pose_recon_s2[:,:,10:12], torch.flip(eye_coor_data[:,:,4:6],(0,)))) 
+        eye_loss = eye_loss_b + eye_loss_s1 + eye_loss_s2
+        #eye_loss = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]) + criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]) + criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
         loss = pose_loss + 5*eye_loss
         running_loss += loss.item()
         running_pose_loss += pose_loss.item()
@@ -123,14 +118,17 @@ def validate(model, dataloader):
     with torch.no_grad():
         for i, data in enumerate(dataloader):
             im_three_channels, pose_data, eye_coor_data, crop_coor_data = data
-            im_five_channels = torch.cat((im_three_channels, im_grid), 1)
-            im_five_channels = im_five_channels.to(device)
+            im_three_channels = im_three_channels.to(device)
             pose_data = pose_data.to(device)
             eye_coor_data = eye_coor_data.to(device)
             crop_coor_data = crop_coor_data.to(device)
-            pose_recon_b, pose_recon_s1, pose_recon_s2 = model(im_five_channels)
+            pose_recon_b, pose_recon_s1, pose_recon_s2 = model(im_three_channels)
             pose_loss = criterion(pose_recon_b[:,:,0:10], pose_data[:,:,0:10]) + criterion(pose_recon_s1[:,:,0:10], pose_data[:,:,10:20]) + criterion(pose_recon_s2[:,:,0:10], pose_data[:,:,20:30])
-            eye_loss = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]) + criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]) + criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
+            eye_loss_b = torch.min(criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]), criterion(pose_recon_b[:,:,10:12], torch.flip(eye_coor_data[:,:,0:2],(0,))))
+            eye_loss_s1 = torch.min(criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]), criterion(pose_recon_s1[:,:,10:12], torch.flip(eye_coor_data[:,:,2:4],(0,))))
+            eye_loss_s2 = torch.min(criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6]), criterion(pose_recon_s2[:,:,10:12], torch.flip(eye_coor_data[:,:,4:6],(0,)))) 
+            eye_loss = eye_loss_b + eye_loss_s1 + eye_loss_s2
+            #eye_loss = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]) + criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]) + criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
             loss = pose_loss + 5*eye_loss
             running_loss += loss.item()
             running_pose_loss += pose_loss.item()

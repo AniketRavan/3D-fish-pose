@@ -11,7 +11,7 @@ from torchvision import datasets
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 from CustomDataset import CustomImageDataset
-from ResNet_Blocks_3D import resnet18
+from ResNet_Blocks_3D_no_constraints import resnet18
 import time
 from multiprocessing import Pool
 import os
@@ -27,7 +27,7 @@ imageSizeY = 141
 epochs = args['epochs']
 output_dir = args['output_dir']
 
-lr = 0.001
+lr = 0.01
 date = '220629'
 
 if (not os.path.isdir(output_dir)):
@@ -76,8 +76,8 @@ train_size = int(len(data)*0.9)
 val_size = len(data) - train_size
 train_data, val_data = torch.utils.data.random_split(data, [train_size, val_size])
 
-train_loader = DataLoader(train_data, batch_size=batch_size,shuffle=True,num_workers=n_cuda*12,prefetch_factor=3,persistent_workers=True)
-val_loader = DataLoader(val_data, batch_size=batch_size,shuffle=False,num_workers=n_cuda*12,prefetch_factor=3,persistent_workers=True)
+train_loader = DataLoader(train_data, batch_size=batch_size,shuffle=True,num_workers=n_cuda*12,prefetch_factor=2,persistent_workers=True)
+val_loader = DataLoader(val_data, batch_size=batch_size,shuffle=False,num_workers=n_cuda*12,prefetch_factor=2,persistent_workers=True)
 
 optimizer = optim.Adam(model.parameters(), lr=lr)
 criterion = nn.MSELoss(reduction='sum')
@@ -101,7 +101,6 @@ def fit(model, dataloader):
         im_grid_3d[:,1,:,:] = im_grid[1,:,:]
         im_five_channels = torch.cat((im_three_channels, im_grid_3d), 1)
         im_five_channels = im_five_channels.to(device)
-        pose_data = pose_data.to(device)
         eye_coor_data = eye_coor_data.to(device)
         crop_coor_data = crop_coor_data.to(device)
         optimizer.zero_grad()

@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=1model
-#SBATCH --output="log/res_mse_100.out"
-#SBATCH --error="error/res_mse_100.err"
+#SBATCH --job-name=1model_grid
+#SBATCH --output="log/grid_res_mse_100.out"
+#SBATCH --error="error/grid_res_mse_100.err"
 #SBATCH --partition=gpux3
 #SBATCH --nodes=1
 #SBATCH --time=24
@@ -10,5 +10,5 @@
 echo Running
 module load opence/1.5.1
 echo Module loaded
-python runme_grid.py -e 100  -o "outputs/220702"
+python runme_grid.py -e 100  -o "outputs/220704_grid"
 echo Done

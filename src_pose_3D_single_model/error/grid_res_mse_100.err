@@ -1,0 +1,34 @@
+
+CommandNotFoundError: Your shell has not been properly configured to use 'conda deactivate'.
+To initialize your shell, run
+
+    $ conda init <SHELL_NAME>
+
+Currently supported shells are:
+  - bash
+  - fish
+  - tcsh
+  - xonsh
+  - zsh
+  - powershell
+
+See 'conda init --help' for more information and options.
+
+IMPORTANT: You may need to close and restart your shell after running 'conda init'.
+
+
+/opt/miniconda3/envs/opence-v1.5.1/lib/python3.9/site-packages/torch/functional.py:445: UserWarning: torch.meshgrid: in an upcoming release, it will be required to pass the indexing argument. (Triggered internally at  /scratch/env/opence1.5.1/conda-bld/pytorch-base_1643072044833/work/aten/src/ATen/native/TensorShape.cpp:2157.)
+  return _VF.meshgrid(tensors, **kwargs)  # type: ignore[attr-defined]
+  0%|          | 0/384 [00:00<?, ?it/s]  0%|          | 0/384 [00:17<?, ?it/s]
+Traceback (most recent call last):
+  File "/home/asravan2/vae_practice/src_pose_3D_single_model/runme_grid.py", line 201, in <module>
+    train_epoch_loss, train_pose_loss = fit(model, train_loader)
+  File "/home/asravan2/vae_practice/src_pose_3D_single_model/runme_grid.py", line 108, in fit
+    pose_loss = criterion(pose_recon_b[:,:,0:10], pose_data[:,:,0:10]) + criterion(pose_recon_s1[:,:,0:10], pose_data[:,:,10:20]) + criterion(pose_recon_s2[:,:,0:10], pose_data[:,:,20:30])
+  File "/opt/miniconda3/envs/opence-v1.5.1/lib/python3.9/site-packages/torch/nn/modules/module.py", line 1102, in _call_impl
+    return forward_call(*input, **kwargs)
+  File "/opt/miniconda3/envs/opence-v1.5.1/lib/python3.9/site-packages/torch/nn/modules/loss.py", line 520, in forward
+    return F.mse_loss(input, target, reduction=self.reduction)
+  File "/opt/miniconda3/envs/opence-v1.5.1/lib/python3.9/site-packages/torch/nn/functional.py", line 3112, in mse_loss
+    return torch._C._nn.mse_loss(expanded_input, expanded_target, _Reduction.get_enum(reduction))
+RuntimeError: Expected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu!
