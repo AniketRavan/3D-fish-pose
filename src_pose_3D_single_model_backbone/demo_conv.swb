@@ -1,0 +1,13 @@
+#!/bin/bash
+#SBATCH --job-name=body_conv
+#SBATCH --output="log/body_conv.out"
+#SBATCH --error="error/body_conv.err"
+#SBATCH --partition=gpux1
+#SBATCH --nodes=1
+#SBATCH --time=24
+
+echo Running
+module load opence/1.5.1
+echo Module loaded
+python train_conv.py -e 100 -f 120 -o "../outputs_conv_100_2_dim"
+echo Done

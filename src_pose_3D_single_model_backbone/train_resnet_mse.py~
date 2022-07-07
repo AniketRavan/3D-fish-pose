@@ -1,0 +1,134 @@
+import torch
+import torchvision
+import torch.optim as optim
+import argparse
+import matplotlib.pyplot as plt
+import torch.nn as nn
+import matplotlib.pyplot as plt
+import torchvision.transforms as transforms
+from tqdm import tqdm
+from torchvision import datasets
+from torch.utils.data import DataLoader
+from torchvision.utils import save_image
+from CustomDataset import CustomImageDataset
+from ResNet_Blocks_2D import resnet18
+import time
+from multiprocessing import Pool
+import os
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-e','--epochs',default=10, type=int, help='number of epochs to train the VAE for')
+parser.add_argument('-o','--output_dir', default="outputs/outputs_pose", type=str, help='path to store output images and plots')
+
+args = vars(parser.parse_args())
+
+epochs = args['epochs']
+output_dir = args['output_dir']
+
+imageSizeX = 119
+imageSizeY = 119
+
+lr = 0.001
+
+if (not os.path.isdir(output_dir)):
+    os.mkdir(output_dir)
+    print('Creating new directory to store output images')
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+model = resnet18(1, 10, activation='leaky_relu').to(device)
+
+if (torch.cuda.is_available()):
+    print(str(torch.cuda.device_count()) + 'GPUs are available!')
+else: print('Cuda is not available')
+batch_size = 630*torch.cuda.device_count()
+
+if torch.cuda.device_count() > 1:
+  print("Using " + str(torch.cuda.device_count()) + " GPUs!")
+  model = nn.DataParallel(model)
+
+transform = transforms.Compose([transforms.ToTensor(), transforms.ConvertImageDtype(torch.float)])
+
+img_dir = '../lookup_table_head/b/new_training_data/training_data_220524_body'
+pose_dir = '../lookup_table_head/b/new_training_data/coordinates_tensor_220524'
+img_files = sorted(os.listdir(img_dir))
+pose_files = sorted(os.listdir(pose_dir))
+
+img_files_address = [img_dir + '/' + file_name for file_name in img_files]
+pose_files_address = [pose_dir + '/' + file_name for file_name in pose_files]
+data = CustomImageDataset(img_files_address, pose_files_address, transform=transform)
+train_size = int(len(data)*0.9)
+val_size = len(data) - train_size
+train_data, val_data = torch.utils.data.random_split(data, [train_size, val_size])
+
+train_loader = DataLoader(train_data, batch_size=batch_size,shuffle=True,num_workers=30,prefetch_factor=10,persistent_workers=True)
+val_loader = DataLoader(val_data, batch_size=batch_size,shuffle=False,num_workers=30,prefetch_factor=10,persistent_workers=True)
+
+
+optimizer = optim.Adam(model.parameters(), lr=lr)
+criterion = nn.MSELoss(reduction='sum')
+
+def final_loss(mse_loss):
+    MSE = mse_loss
+    return MSE
+
+
+def fit(model, dataloader):
+    model.train()
+    running_loss = 0.0
+    #for i, data in enumerate(dataloader):
+    for i, data in tqdm(enumerate(dataloader), total=int(len(train_data)/dataloader.batch_size)):
+        image,pose = data
+        pose_data = pose.to(device)
+        image_data = image.to(device)
+        optimizer.zero_grad()
+        pose_reconstructed = model(image_data)
+        loss = criterion(pose_data, pose_reconstructed)
+        running_loss += loss.item()
+        loss.backward()
+        optimizer.step()
+
+    train_loss = running_loss/len(dataloader.dataset)
+    return train_loss
+
+
+def validate(model, dataloader):
+    model.eval()
+    running_loss = 0.0
+    with torch.no_grad():
+        for i, data in enumerate(dataloader):
+            image,pose = data
+            pose_data = pose.to(device)
+            image_data = image.to(device)
+            pose_reconstructed = model(image_data)
+            loss = criterion(pose_data, pose_reconstructed)
+            running_loss += loss.item()
+
+            # save the last batch input and output of every epoch
+            if i == int(len(val_data)/dataloader.batch_size) - 1:
+                num_rows = 8
+                print(image_data.shape)
+                both = torch.cat((pose_data.view(batch_size, 2, 10)[:8],
+                                  pose_reconstructed.view(batch_size, 2, 10)[:8]))
+                torch.save(both.cpu(), output_dir + "/output_" + str(epoch) + ".pt")
+                images_to_save = image_data.view(batch_size, 1, imageSizeY, imageSizeX)[:8]
+                save_image(images_to_save.cpu(), output_dir + "/output_" + str(epoch) + ".png",nrow=num_rows)
+
+    val_loss = running_loss/len(dataloader.dataset)
+    return val_loss
+
+train_loss = []
+val_loss = []
+for epoch in range(epochs):
+    print(f"Epoch {epoch+1} of {epochs}",flush=True)
+    train_epoch_loss = fit(model, train_loader)
+    val_epoch_loss = validate(model, val_loader)
+    train_loss.append(train_epoch_loss)
+    val_loss.append(val_epoch_loss)
+    print(f"Train Loss: {train_epoch_loss:.4f}",flush=True)
+    print(f"Val Loss: {val_epoch_loss:.4f}",flush=True)
+
+torch.save(model.state_dict(), 'pose_resnet_mse.pt')
+
+plt.plot(train_loss, color='green')
+plt.plot(val_loss, color='red')
+plt.savefig(output_dir + "/loss.png")
