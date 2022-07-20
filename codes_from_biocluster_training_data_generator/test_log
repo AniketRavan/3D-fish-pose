@@ -1,0 +1,265 @@
+MATLAB is selecting SOFTWARE OPENGL rendering.
+
+                            < M A T L A B (R) >
+                  Copyright 1984-2017 The MathWorks, Inc.
+                   R2017b (9.3.0.713579) 64-bit (glnxa64)
+                             September 14, 2017
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+
+ans =
+
+    '1 of 220'
+
+[Warning: MATLAB has disabled some advanced graphics rendering features by
+switching to software OpenGL. For more information, click <a
+href="matlab:opengl('problems')">here</a>.] 
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+
+ans =
+
+    '2 of 220'
+
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+
+ans =
+
+    '3 of 220'
+
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+
+ans =
+
+    '4 of 220'
+
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+
+ans =
+
+    '5 of 220'
+
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+
+ans =
+
+    '6 of 220'
+
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+
+ans =
+
+    '7 of 220'
+
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+
+ans =
+
+    '8 of 220'
+
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+
+ans =
+
+    '9 of 220'
+
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+
+ans =
+
+    '10 of 220'
+
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+iteration 1
+iteration 2
+Done
