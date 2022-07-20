@@ -11,7 +11,7 @@ from torchvision import datasets
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 from CustomDataset import CustomImageDataset
-from ResNet_Blocks_3D import resnet18
+from ResNet_Blocks_3D_4blocks import resnet18
 import time
 from multiprocessing import Pool
 import os
@@ -28,7 +28,7 @@ epochs = args['epochs']
 output_dir = args['output_dir']
 
 lr = 0.001
-date = '220629'
+date = '220717'
 
 if (not os.path.isdir(output_dir)):
     os.mkdir(output_dir)
@@ -48,19 +48,19 @@ if torch.cuda.device_count() > 1:
   model = nn.DataParallel(model)
 
 transform = transforms.Compose([transforms.ToTensor(), transforms.ConvertImageDtype(torch.float)])
-pose_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/annotations_' + date + '_pose_tensor/'
+pose_folder = '../lookup_table_head/training_data_3D_220718/annotations_' + date + '_pose_tensor/'
 pose_files = sorted(os.listdir(pose_folder))
 pose_files_add = [pose_folder + file_name for file_name in pose_files]
 
-crop_coor_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/annotations_' + date + '_pose_tensor/'
+crop_coor_folder = '../lookup_table_head/training_data_3D_220718/annotations_' + date + '_pose_tensor/'
 crop_coor_files = sorted(os.listdir(crop_coor_folder))
 crop_coor_files_add = [crop_coor_folder + file_name for file_name in crop_coor_files]
 
-eye_coor_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/annotations_' + date + '_eye_coor_tensor/'
+eye_coor_folder = '../lookup_table_head/training_data_3D_220718/annotations_' + date + '_eye_coor_tensor/'
 eye_coor_files = sorted(os.listdir(eye_coor_folder))
 eye_coor_files_add = [eye_coor_folder + file_name for file_name in eye_coor_files]
 
-im_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/images/'
+im_folder = '../lookup_table_head/training_data_3D_220718/images/'
 im_files = sorted(os.listdir(im_folder))
 im_files_add = [im_folder + file_name for file_name in im_files]
 
@@ -95,9 +95,9 @@ def fit(model, dataloader):
         optimizer.zero_grad()
         pose_recon_b, pose_recon_s1, pose_recon_s2 = model(im_three_channels)
         pose_loss = criterion(pose_recon_b[:,:,0:10], pose_data[:,:,0:10]) + criterion(pose_recon_s1[:,:,0:10], pose_data[:,:,10:20]) + criterion(pose_recon_s2[:,:,0:10], pose_data[:,:,20:30])
-        eye_loss_b = torch.min(criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]), criterion(pose_recon_b[:,:,10:12], torch.flip(eye_coor_data[:,:,0:2],(0,))))
-        eye_loss_s1 = torch.min(criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]), criterion(pose_recon_s1[:,:,10:12], torch.flip(eye_coor_data[:,:,2:4],(0,))))
-        eye_loss_s2 = torch.min(criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6]), criterion(pose_recon_s2[:,:,10:12], torch.flip(eye_coor_data[:,:,4:6],(0,)))) 
+        eye_loss_b = torch.min(criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]), criterion(pose_recon_b[:,:,10:12], torch.flip(eye_coor_data[:,:,0:2],(2,))))
+        eye_loss_s1 = torch.min(criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]), criterion(pose_recon_s1[:,:,10:12], torch.flip(eye_coor_data[:,:,2:4],(2,))))
+        eye_loss_s2 = torch.min(criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6]), criterion(pose_recon_s2[:,:,10:12], torch.flip(eye_coor_data[:,:,4:6],(2,)))) 
         eye_loss = eye_loss_b + eye_loss_s1 + eye_loss_s2
         #eye_loss = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]) + criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]) + criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
         loss = pose_loss + 5*eye_loss
@@ -124,9 +124,9 @@ def validate(model, dataloader):
             crop_coor_data = crop_coor_data.to(device)
             pose_recon_b, pose_recon_s1, pose_recon_s2 = model(im_three_channels)
             pose_loss = criterion(pose_recon_b[:,:,0:10], pose_data[:,:,0:10]) + criterion(pose_recon_s1[:,:,0:10], pose_data[:,:,10:20]) + criterion(pose_recon_s2[:,:,0:10], pose_data[:,:,20:30])
-            eye_loss_b = torch.min(criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]), criterion(pose_recon_b[:,:,10:12], torch.flip(eye_coor_data[:,:,0:2],(0,))))
-            eye_loss_s1 = torch.min(criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]), criterion(pose_recon_s1[:,:,10:12], torch.flip(eye_coor_data[:,:,2:4],(0,))))
-            eye_loss_s2 = torch.min(criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6]), criterion(pose_recon_s2[:,:,10:12], torch.flip(eye_coor_data[:,:,4:6],(0,)))) 
+            eye_loss_b = torch.min(criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]), criterion(pose_recon_b[:,:,10:12], torch.flip(eye_coor_data[:,:,0:2],(2,))))
+            eye_loss_s1 = torch.min(criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]), criterion(pose_recon_s1[:,:,10:12], torch.flip(eye_coor_data[:,:,2:4],(2,))))
+            eye_loss_s2 = torch.min(criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6]), criterion(pose_recon_s2[:,:,10:12], torch.flip(eye_coor_data[:,:,4:6],(2,)))) 
             eye_loss = eye_loss_b + eye_loss_s1 + eye_loss_s2
             #eye_loss = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]) + criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]) + criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
             loss = pose_loss + 5*eye_loss
@@ -151,29 +151,35 @@ def validate(model, dataloader):
                 for m in range(0,8):
                     axs[1,m].imshow(images_b[m,0,:,:].cpu(), cmap='gray')
                     axs[1,m].scatter(pose_recon_b[m,0,:].cpu(), pose_recon_b[m,1,:].cpu(), s=0.07, c='green', alpha=0.6)
+                    axs[1,m].axis('off')
 
                 for m in range(0,8):
                     axs[0,m].imshow(images_b[m,0,:,:].cpu(), cmap='gray')
                     axs[0,m].scatter(pose_data[m,0,0:10].cpu(), pose_data[m,1,0:10].cpu(), s=0.07, c='red', alpha=0.6)
                     axs[0,m].scatter(eye_coor_data[m,0,0:2].cpu(), eye_coor_data[m,1,0:2].cpu(), s=0.07, c='green', alpha=0.6)
+                    axs[0,m].axis('off')
 
                 for m in range(0,8):
                     axs[3,m].imshow(images_s1[m,0,:,:].cpu(), cmap='gray')
                     axs[3,m].scatter(pose_recon_s1[m,0,:].cpu(), pose_recon_s1[m,1,:].cpu(), s=0.07, c='green', alpha=0.6)
+                    axs[3,m].axis('off')
 
                 for m in range(0,8):
                     axs[2,m].imshow(images_s1[m,0,:,:].cpu(), cmap='gray')
                     axs[2,m].scatter(pose_data[m,0,10:20].cpu(), pose_data[m,1,10:20].cpu(), s=0.07, c='red', alpha=0.6)
                     axs[2,m].scatter(eye_coor_data[m,0,2:4].cpu(), eye_coor_data[m,1,2:4].cpu(), s=0.07, c='green', alpha=0.6)
+                    axs[2,m].axis('off')
                 
                 for m in range(0,8):
                     axs[5,m].imshow(images_s2[m,0,:,:].cpu(), cmap='gray')
                     axs[5,m].scatter(pose_recon_s2[m,0,:].cpu(), pose_recon_s2[m,1,:].cpu(), s=0.07, c='green', alpha=0.6)
+                    axs[5,m].axis('off')
 
                 for m in range(0,8):
                     axs[4,m].imshow(images_s2[m,0,:,:].cpu(), cmap='gray')
                     axs[4,m].scatter(pose_data[m,0,20:30].cpu(), pose_data[m,1,20:30].cpu(), s=0.07, c='red', alpha=0.6)
                     axs[4,m].scatter(eye_coor_data[m,0,4:6].cpu(), eye_coor_data[m,1,4:6].cpu(), s=0.07, c='green', alpha=0.6)
+                    axs[4,m].axis('off')
 
 
 
@@ -200,7 +206,7 @@ for epoch in range(epochs):
     print(f"Train Loss: {train_epoch_loss:.4f}",flush=True)
     print(f"Val Loss: {val_epoch_loss:.4f}",flush=True)
 
-torch.save(model.state_dict(), 'resnet_pose_' + date + '.pt')
+torch.save(model.state_dict(), 'resnet_pose_' + date + '_5.pt')
 print(type(train_pose_loss_array))
 
 plt.plot(train_loss[20:], color='green')

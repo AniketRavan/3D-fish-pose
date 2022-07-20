@@ -10,9 +10,10 @@ ImageFile.LOAD_TRUNCATED_IMAGES = True
 import cv2
 
 class CustomImageDataset(Dataset):
-    def __init__(self, img_files_address, crop_coor_files_add, transform=None):
+    def __init__(self, img_files_address, coor_3d_files_add, crop_coor_files_add, transform=None):
         self.img_files_address = img_files_address
         self.crop_coor_files_add = crop_coor_files_add
+        self.coor_3d_files_add = coor_3d_files_add
         self.data_size = len(img_files_address)
         self.transform = transform
     
@@ -33,4 +34,5 @@ class CustomImageDataset(Dataset):
         im_three_channels[1,:,:] = im_s1
         im_three_channels[2,:,:] = im_s2
         crop_coor = torch.load(self.crop_coor_files_add[idx])
-        return im_three_channels, crop_coor
+        coor_3d = torch.load(self.coor_3d_files_add[idx])
+        return im_three_channels, coor_3d, crop_coor

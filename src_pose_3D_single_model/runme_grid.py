@@ -28,7 +28,7 @@ epochs = args['epochs']
 output_dir = args['output_dir']
 
 lr = 0.01
-date = '220629'
+date = '220714'
 
 if (not os.path.isdir(output_dir)):
     os.mkdir(output_dir)
@@ -48,19 +48,19 @@ if torch.cuda.device_count() > 1:
   model = nn.DataParallel(model)
 
 transform = transforms.Compose([transforms.ToTensor(), transforms.ConvertImageDtype(torch.float)])
-pose_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/annotations_' + date + '_pose_tensor/'
+pose_folder = '../lookup_table_head/training_data_3D_220714/annotations_' + date + '_pose_tensor/'
 pose_files = sorted(os.listdir(pose_folder))
 pose_files_add = [pose_folder + file_name for file_name in pose_files]
 
-crop_coor_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/annotations_' + date + '_pose_tensor/'
+crop_coor_folder = '../lookup_table_head/training_data_3D_220714/annotations_' + date + '_pose_tensor/'
 crop_coor_files = sorted(os.listdir(crop_coor_folder))
 crop_coor_files_add = [crop_coor_folder + file_name for file_name in crop_coor_files]
 
-eye_coor_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/annotations_' + date + '_eye_coor_tensor/'
+eye_coor_folder = '../lookup_table_head/training_data_3D_220714/annotations_' + date + '_eye_coor_tensor/'
 eye_coor_files = sorted(os.listdir(eye_coor_folder))
 eye_coor_files_add = [eye_coor_folder + file_name for file_name in eye_coor_files]
 
-im_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/images/'
+im_folder = '../lookup_table_head/training_data_3D_220714/images/'
 im_files = sorted(os.listdir(im_folder))
 im_files_add = [im_folder + file_name for file_name in im_files]
 
@@ -97,12 +97,13 @@ def fit(model, dataloader):
     for i, data in tqdm(enumerate(dataloader), total=int(len(train_data)/dataloader.batch_size)):
         im_three_channels, pose_data, eye_coor_data, crop_coor_data = data
         im_grid_3d = torch.zeros(im_three_channels.shape[0], 2, im_three_channels.shape[2], im_three_channels.shape[3])
-        im_grid_3d[:,0,:,:] = im_grid[0,:,:]
-        im_grid_3d[:,1,:,:] = im_grid[1,:,:]
+        im_grid_3d[:,0,:,:] = im_grid[0,:,:]/100
+        im_grid_3d[:,1,:,:] = im_grid[1,:,:]/100
         im_five_channels = torch.cat((im_three_channels, im_grid_3d), 1)
         im_five_channels = im_five_channels.to(device)
         eye_coor_data = eye_coor_data.to(device)
         crop_coor_data = crop_coor_data.to(device)
+        pose_data = pose_data.to(device)
         optimizer.zero_grad()
         pose_recon_b, pose_recon_s1, pose_recon_s2 = model(im_five_channels)
         pose_loss = criterion(pose_recon_b[:,:,0:10], pose_data[:,:,0:10]) + criterion(pose_recon_s1[:,:,0:10], pose_data[:,:,10:20]) + criterion(pose_recon_s2[:,:,0:10], pose_data[:,:,20:30])
@@ -126,8 +127,8 @@ def validate(model, dataloader):
         for i, data in enumerate(dataloader):
             im_three_channels, pose_data, eye_coor_data, crop_coor_data = data
             im_grid_3d = torch.zeros(im_three_channels.shape[0], 2, im_three_channels.shape[2], im_three_channels.shape[3])
-            im_grid_3d[:,0,:,:] = im_grid[0,:,:]
-            im_grid_3d[:,1,:,:] = im_grid[1,:,:]
+            im_grid_3d[:,0,:,:] = im_grid[0,:,:]/100
+            im_grid_3d[:,1,:,:] = im_grid[1,:,:]/100
             im_five_channels = torch.cat((im_three_channels, im_grid_3d), 1)
             im_five_channels = im_five_channels.to(device)
             pose_data = pose_data.to(device)
