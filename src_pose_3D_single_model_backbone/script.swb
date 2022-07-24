@@ -7,9 +7,10 @@
 #SBATCH --time=24
 #SBATCH --cpu_per_gpu=40
 #SBATCH --mem-per-cpu=2048
+#SBATCH --begin=now+2hour
 
 echo Running
 module load opence/1.5.1
 echo Module loaded
-python runme.py -e 100  -o "outputs/220706_eye_symmetric"
+python runme.py -e 120  -o "outputs/220717_2_lowest_epoch_loss"
 echo Done

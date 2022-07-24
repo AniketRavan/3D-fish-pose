@@ -23,7 +23,7 @@ parser.add_argument('-o','--output_dir', default="outputs/220705_symmetric_eyes"
 parser.add_argument('-p','--proj_params', default="proj_params_101019_corrected_new", type=str, help='path to calibrated camera parameters')
 
 
-date = '220629'
+date = '220717'
 args = vars(parser.parse_args())
 imageSizeX = 141
 imageSizeY = 141
@@ -47,31 +47,31 @@ n_cuda = torch.cuda.device_count()
 if (torch.cuda.is_available()):
     print(str(n_cuda) + 'GPUs are available!')
 else: print('Cuda is not available')
-batch_size = 185*n_cuda
+batch_size = 350*n_cuda
 
 if torch.cuda.device_count() > 1:
   print("Using " + str(n_cuda) + " GPUs!")
   model = nn.DataParallel(model)
 
 transform = transforms.Compose([transforms.ToTensor(), transforms.ConvertImageDtype(torch.float)])
-pose_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/annotations_'+date+'_pose_tensor/'
+pose_folder = '../lookup_table_head/training_data_3D_220717/annotations_'+date+'_pose_tensor/'
 pose_files = sorted(os.listdir(pose_folder))
 pose_files_add = [pose_folder + file_name for file_name in pose_files]
 
-crop_coor_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/annotations_'+date+'_crop_coor_tensor/'
+crop_coor_folder = '../lookup_table_head/training_data_3D_220717/annotations_'+date+'_crop_coor_tensor/'
 crop_coor_files = sorted(os.listdir(crop_coor_folder))
 crop_coor_files_add = [crop_coor_folder + file_name for file_name in crop_coor_files]
 
-eye_coor_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/annotations_'+date+'_eye_coor_tensor/'
+eye_coor_folder = '../lookup_table_head/training_data_3D_220717/annotations_'+date+'_eye_coor_tensor/'
 eye_coor_files = sorted(os.listdir(eye_coor_folder))
 eye_coor_files_add = [eye_coor_folder + file_name for file_name in eye_coor_files]
 
-coor_3d_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/annotations_'+date+'_coor_3d_tensor/'
+coor_3d_folder = '../lookup_table_head/training_data_3D_220717/annotations_'+date+'_coor_3d_tensor/'
 coor_3d_files = sorted(os.listdir(coor_3d_folder))
 coor_3d_files_add = [coor_3d_folder + file_name for file_name in coor_3d_files]
 
 
-im_folder = '../lookup_table_head/training_data_3D_pose_shifted_1/images/'
+im_folder = '../lookup_table_head/training_data_3D_220717/images/'
 im_files = sorted(os.listdir(im_folder))
 im_files_add = [im_folder + file_name for file_name in im_files]
 
@@ -185,7 +185,6 @@ def fit(model, dataloader, proj_params):
         #pose_loss = criterion(pose_recon_b[:,:,0:10], pose_data[:,:,0:10]) + criterion(pose_recon_s1[:,:,0:10], pose_data[:,:,10:20]) + criterion(pose_recon_s2[:,:,0:10], pose_data[:,:,20:30])
         #eye_loss = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]) + criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]) + criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
         pose_loss = criterion(coor_3d_data[:,:,0:10], coor_3d[:,:,0:10])
-        #eye_loss = criterion(coor_3d_data[:,:,10:12], coor_3d[:,:,10:12])
         eye_loss = torch.min(criterion(coor_3d_data[:,:,10:12], coor_3d[:,:,10:12]),criterion(coor_3d_data[:,:,10:12],torch.flip(coor_3d[:,:,10:12],(2,))))
         loss = pose_loss + eye_loss
         running_loss += loss.item()
@@ -243,6 +242,7 @@ def validate(model, dataloader, proj_params):
             #eye_loss = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]) + criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]) + criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
             pose_loss = criterion(coor_3d_data[:,:,0:10], coor_3d[:,:,0:10])
             eye_loss = torch.min(criterion(coor_3d_data[:,:,10:12], coor_3d[:,:,10:12]),criterion(coor_3d_data[:,:,10:12],torch.flip(coor_3d[:,:,10:12],(2,))))
+
             loss = pose_loss + eye_loss
             running_loss += loss.item()
             running_pose_loss += pose_loss.item()
@@ -265,29 +265,35 @@ def validate(model, dataloader, proj_params):
                 for m in range(0,8):
                     axs[1,m].imshow(images_b[m,0,:,:].cpu(), cmap='gray')
                     axs[1,m].scatter(pose_recon_b[m,0,:].cpu(), pose_recon_b[m,1,:].cpu(), s=0.07, c='green', alpha=0.6)
+                    axs[1,m].axis('off')
 
                 for m in range(0,8):
                     axs[0,m].imshow(images_b[m,0,:,:].cpu(), cmap='gray')
                     axs[0,m].scatter(pose_data_b[m,0,0:10].cpu(), pose_data_b[m,1,0:10].cpu(), s=0.07, c='red', alpha=0.6)
                     axs[0,m].scatter(pose_data_b[m,0,10:12].cpu(), pose_data_b[m,1,10:12].cpu(), s=0.07, c='green', alpha=0.6)
+                    axs[0,m].axis('off')
 
                 for m in range(0,8):
                     axs[3,m].imshow(images_s1[m,0,:,:].cpu(), cmap='gray')
                     axs[3,m].scatter(pose_recon_s1[m,0,:].cpu(), pose_recon_s1[m,1,:].cpu(), s=0.07, c='green', alpha=0.6)
+                    axs[3,m].axis('off')
 
                 for m in range(0,8):
                     axs[2,m].imshow(images_s1[m,0,:,:].cpu(), cmap='gray')
                     axs[2,m].scatter(pose_data_s1[m,0,0:10].cpu(), pose_data_s1[m,1,0:10].cpu(), s=0.07, c='red', alpha=0.6)
                     axs[2,m].scatter(pose_data_s1[m,0,10:12].cpu(), pose_data_s1[m,1,10:12].cpu(), s=0.07, c='green', alpha=0.6)
+                    axs[2,m].axis('off')
                 
                 for m in range(0,8):
                     axs[5,m].imshow(images_s2[m,0,:,:].cpu(), cmap='gray')
                     axs[5,m].scatter(pose_recon_s2[m,0,:].cpu(), pose_recon_s2[m,1,:].cpu(), s=0.07, c='green', alpha=0.6)
+                    axs[5,m].axis('off')
 
                 for m in range(0,8):
                     axs[4,m].imshow(images_s2[m,0,:,:].cpu(), cmap='gray')
-                    axs[4,m].scatter(pose_data_s2[m,0,10:20].cpu(), pose_data_s2[m,1,10:20].cpu(), s=0.07, c='red', alpha=0.6)
+                    axs[4,m].scatter(pose_data_s2[m,0,0:10].cpu(), pose_data_s2[m,1,0:10].cpu(), s=0.07, c='red', alpha=0.6)
                     axs[4,m].scatter(pose_data_s2[m,0,10:12].cpu(), pose_data_s2[m,1,10:12].cpu(), s=0.07, c='green', alpha=0.6)
+                    axs[4,m].axis('off')
 
 
                 plt.axis('off')
@@ -306,6 +312,8 @@ val_pose_loss_array = []
 proj_params = torch.tensor(proj_params)
 proj_params = proj_params[None, :]
 
+lowest_val_loss = 5
+
 for epoch in range(epochs):
     print(f"Epoch {epoch+1} of {epochs}",flush=True)
     train_epoch_loss, train_pose_loss = fit(model, train_loader, proj_params)
@@ -314,10 +322,14 @@ for epoch in range(epochs):
     val_loss.append(val_epoch_loss)
     train_pose_loss_array.append(train_pose_loss)
     val_pose_loss_array.append(val_pose_loss)
+    if (val_epoch_loss < lowest_val_loss):
+        torch.save(model.state_dict(), 'resnet_pose_' + date + '_2_lowest_loss.pt')
+        print('Saving model with loss = ' + str(val_epoch_loss))
+        lowest_val_loss = val_epoch_loss
     print(f"Train Loss: {train_epoch_loss:.4f}",flush=True)
     print(f"Val Loss: {val_epoch_loss:.4f}",flush=True)
 
-torch.save(model.state_dict(), 'resnet_pose_' + date + '.pt')
+torch.save(model.state_dict(), 'resnet_pose_' + date + '_2.pt')
 
 plt.plot(train_loss[2:], color='green')
 plt.plot(val_loss[2:], color='red')

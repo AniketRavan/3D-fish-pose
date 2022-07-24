@@ -90,7 +90,7 @@ class ResNetEncoder(nn.Module):
     """
     ResNet encoder composed by layers with increasing features.
     """
-    def __init__(self, in_channels=3, blocks_sizes=[32, 64, 128], deepths=[2,2,2], 
+    def __init__(self, in_channels=3, blocks_sizes=[32, 64, 128, 256], deepths=[2,2,2], 
                  activation='relu', block=ResNetBasicBlock, *args, **kwargs):
         super().__init__()
         self.blocks_sizes = blocks_sizes
@@ -150,9 +150,9 @@ class ResnetDecoder(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.leaky_relu(self.decoder(x))
         x = self.bn0(x)
-        crop_intermediate = self.bn_crop0(self.FC_crop0(crop_coor_data))
-        x = x + self.leaky_relu(self.bn_crop1(self.FC_crop1(crop_intermediate)))
-        x = self.bn0_crop_added(x)
+        crop_intermediate = self.bn_crop0(self.leaky_relu(self.FC_crop0(crop_coor_data)))
+        x = x + self.bn_crop1(self.leaky_relu(self.FC_crop1(crop_intermediate)))
+        #x = self.bn0_crop_added(x)
         x = self.leaky_relu(self.FC1(x))
         x = self.bn1(x)
         x = self.FC2(x)
@@ -171,11 +171,11 @@ class ResNet(nn.Module):
         x = self.encoder(x)
         coor_3d = self.decoder1(x, crop_coor_data).view(-1, 3, self.n_classes) # Array consisting of all views
         coor_3d = coor_3d - 0.5
-        shifting_tensor = torch.tensor([0,0,70], device=coor_3d.device)
+        shifting_tensor = torch.tensor([0,0,75], device=coor_3d.device)
         shifting_tensor = shifting_tensor[None,:,None].expand(coor_3d.shape[0],-1,12)
-        return coor_3d*40 + shifting_tensor
+        return coor_3d*60 + shifting_tensor
             
 def resnet18(in_channels, n_classes, block=ResNetBasicBlock, *args, **kwargs):
-    return ResNet(in_channels, n_classes, block=block, deepths=[2, 2, 2], *args, **kwargs)
+    return ResNet(in_channels, n_classes, block=block, deepths=[2, 2, 2, 2], *args, **kwargs)
 
 
