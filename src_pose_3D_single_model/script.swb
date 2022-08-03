@@ -12,5 +12,5 @@
 echo Running
 module load opence/1.5.1
 echo Module loaded
-python runme.py -e 100  -o "outputs/220718_5"
+python runme.py -e 100  -o "outputs/220802_2"
 echo Done
