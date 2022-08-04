@@ -18,6 +18,7 @@ import os
 import scipy.io as sio
 from scipy.optimize import least_squares
 import numpy as np
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-e','--epochs',default=1, type=int, help='number of epochs to train the VAE for')
@@ -37,6 +38,7 @@ output_dir = args['output_dir']
 proj_params = sio.loadmat(proj_params_path)
 proj_params = torch.tensor(proj_params['proj_params'])
 proj_params = proj_params[None,:,:]
+proj_params_cpu = proj_params
 lr = 0.001
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -229,7 +231,7 @@ def save_images(pose_recon_b, pose_recon_s1, pose_recon_s2, pose_data_b, pose_da
         plt.savefig(output_dir + '/im_' + str(counter) + '.svg')
         plt.close()
         counter = counter + 1
-        return counter
+
 
 
 
@@ -254,7 +256,6 @@ def validate(model, dataloader, proj_params):
                 coor_3d_data = coor_3d_data_cpu.to(device)
                 crop_coor_data = crop_coor_data_cpu.to(device)
                 crop_split = crop_coor_data[:,0,[0,2,4,6,8,10]]
-                proj_params_cpu = proj_params
                 proj_params = proj_params_cpu.to(device)
                 pose_recon_b, pose_recon_s1, pose_recon_s2 = model(im_three_channels)
                 pose_data_b, pose_data_s1, pose_data_s2 = calc_proj_w_refra(coor_3d_data,proj_params)
@@ -287,7 +288,7 @@ def validate(model, dataloader, proj_params):
                 
                 rerecon_coor_3d = torch.zeros(coor_3d_data_cpu.shape)
                 #proj_params_cpu = torch.tensor(proj_params_cpu)
-                
+                begin_time = time.time()
                 for batch_sample in range(0, pose_recon_b.shape[0]):
                     for point in range(0,10):
                         rerecon_coor_3d[batch_sample, :, point], _ = triangulate_3d(pose_recon_b[batch_sample, :, point] + 1, pose_recon_s1[batch_sample, :, point] + 1, pose_recon_s2[batch_sample, :, point] + 1, proj_params_cpu)
@@ -299,6 +300,7 @@ def validate(model, dataloader, proj_params):
                                 if (cost < min_cost):
                                     rerecon_coor_3d[batch_sample, :, point] = recon_coor_3d_temp
                                     min_cost = cost
+                print(time.time() - begin_time)
                 pose_rerecon_b, pose_rerecon_s1, pose_rerecon_s2 = calc_proj_w_refra(rerecon_coor_3d, proj_params_cpu)
                 pose_rerecon_b[:,0,:] = pose_rerecon_b[:,0,:] - crop_coor_data_cpu[:,0,2,None]
                 pose_rerecon_b[:,1,:] = pose_rerecon_b[:,1,:] - crop_coor_data_cpu[:,0,0,None]
@@ -310,12 +312,12 @@ def validate(model, dataloader, proj_params):
                 pose_recon_b = pose_rerecon_b; pose_recon_s1 = pose_rerecon_s1; pose_recon_s2 = pose_rerecon_s2
 
                 pose_loss = criterion(rerecon_coor_3d, coor_3d_data_cpu)
-                pose_loss = torch.sum(pose_loss, dim=(1,2))
-                pose_loss = torch.sqrt(pose_loss)/12
+                pose_loss = torch.sqrt(torch.sum(pose_loss, dim=(1)))
+                pose_loss = torch.sum(pose_loss, dim=(1))/12
                 loss_idx = (pose_loss > 0.35) & (pose_loss < 0.5)
                 im_b = im_three_channels[loss_idx,0,:,:]; im_s1 = im_three_channels[loss_idx,1,:,:]; im_s2 = im_three_channels[loss_idx,2,:,:]; 
-                counter = save_images(pose_recon_b[loss_idx,:,:], pose_recon_s1[loss_idx,:,:], pose_recon_s2[loss_idx,:,:], pose_data_b[loss_idx,:,:].cpu(), pose_data_s1[loss_idx,:,:].cpu(), pose_data_s2[loss_idx,:,:].cpu(), im_b, im_s1, im_s2, counter, output_dir)
-                
+                save_images(pose_recon_b[loss_idx,:,:], pose_recon_s1[loss_idx,:,:], pose_recon_s2[loss_idx,:,:], pose_data_b[loss_idx,:,:].cpu(), pose_data_s1[loss_idx,:,:].cpu(), pose_data_s2[loss_idx,:,:].cpu(), im_b, im_s1, im_s2, counter, output_dir)
+                counter = counter + im_b.shape[0]
                 #pose_loss = criterion(pose_recon_b[:,:,0:10], pose_data_b[:,:,0:10]) + criterion(pose_recon_s1[:,:,0:10], pose_data_s1[:,:,0:10]) + criterion(pose_recon_s2[:,:,0:10], pose_data_s2[:,:,0:10])
                 #eye_loss_b = criterion(pose_recon_b[:,:,10:12],pose_data_b[:,:,10:12])
                 #eye_loss_s1 = criterion(pose_recon_s1[:,:,10:12],pose_data_s1[:,:,10:12])
@@ -337,8 +339,7 @@ def validate(model, dataloader, proj_params):
                 #running_pose_loss += pose_loss.item()
                 
                 # save the last batch input and output of every epoch
-                if 1:
-                #if i == int(len(val_data)/dataloader.batch_size) - 1:
+                if i == int(len(val_data)/dataloader.batch_size) - 1:
                     num_rows = 8
                     im_b = im_three_channels[:,0,:,:]
                     im_s1 = im_three_channels[:,1,:,:]

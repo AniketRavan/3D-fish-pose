@@ -100,7 +100,7 @@ def fit(model, dataloader):
         eye_loss_s2 = torch.min(criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6]), criterion(pose_recon_s2[:,:,10:12], torch.flip(eye_coor_data[:,:,4:6],(2,)))) 
         eye_loss = eye_loss_b + eye_loss_s1 + eye_loss_s2
         #eye_loss = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]) + criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]) + criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
-        loss = pose_loss + 5*eye_loss
+        loss = pose_loss + 1*eye_loss
         running_loss += loss.item()
         running_pose_loss += pose_loss.item()
         loss.backward()
@@ -129,7 +129,7 @@ def validate(model, dataloader):
             eye_loss_s2 = torch.min(criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6]), criterion(pose_recon_s2[:,:,10:12], torch.flip(eye_coor_data[:,:,4:6],(2,)))) 
             eye_loss = eye_loss_b + eye_loss_s1 + eye_loss_s2
             #eye_loss = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]) + criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]) + criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
-            loss = pose_loss + 5*eye_loss
+            loss = pose_loss + 1*eye_loss
             running_loss += loss.item()
             running_pose_loss += pose_loss.item()
 
@@ -206,7 +206,7 @@ for epoch in range(epochs):
     print(f"Train Loss: {train_epoch_loss:.4f}",flush=True)
     print(f"Val Loss: {val_epoch_loss:.4f}",flush=True)
 
-torch.save(model.state_dict(), 'resnet_pose_' + date + '_2.pt')
+torch.save(model.state_dict(), 'resnet_pose_' + date + '_2.2.pt')
 print(type(train_pose_loss_array))
 
 plt.plot(train_loss[20:], color='green')
