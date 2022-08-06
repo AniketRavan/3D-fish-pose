@@ -11,7 +11,7 @@ from torchvision import datasets
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 from CustomDataset_images_only import CustomImageDataset
-from ResNet_Blocks_3D_five_blocks import resnet18
+from ResNet_Blocks_3D_4blocks import resnet18
 import time
 from multiprocessing import Pool
 import os
@@ -51,12 +51,12 @@ batch_size = 260*n_cuda
 
 #if torch.cuda.device_count() > 1:
   #print("Using " + str(n_cuda) + " GPUs!")
-#model = nn.DataParallel(model)
+model = nn.DataParallel(model)
 
 if (not os.path.isdir(output_dir)):
     os.mkdir(output_dir)
 
-model.load_state_dict(torch.load('resnet_pose_220731_4.pt'))
+model.load_state_dict(torch.load('resnet_pose_220802_2.pt'))
 
 transform = transforms.Compose([transforms.ToTensor(), transforms.ConvertImageDtype(torch.float)])
 im_folder = '../validation_data_3D_' + date + '_er_ob/images_real/'

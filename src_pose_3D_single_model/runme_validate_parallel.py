@@ -11,7 +11,7 @@ from torchvision import datasets
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 from CustomDataset_images_only import CustomImageDataset
-from ResNet_Blocks_3D_five_blocks import resnet18
+from ResNet_Blocks_3D_4blocks import resnet18
 import time
 import multiprocessing as mp
 from itertools import repeat
@@ -22,6 +22,7 @@ import numpy as np
 import time
 import resource
 import pdb 
+import math
 
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 resource.setrlimit(resource.RLIMIT_NOFILE, (4096, rlimit[1]))
@@ -54,16 +55,16 @@ n_cuda = torch.cuda.device_count()
 if (torch.cuda.is_available()):
     print(str(n_cuda) + 'GPUs are available!')
 else: print('Cuda is not available')
-batch_size = 260*n_cuda
+batch_size = 350*n_cuda
 
 #if torch.cuda.device_count() > 1:
   #print("Using " + str(n_cuda) + " GPUs!")
-#model = nn.DataParallel(model)
+model = nn.DataParallel(model)
 
 if (not os.path.isdir(output_dir)):
     os.mkdir(output_dir)
 
-model.load_state_dict(torch.load('resnet_pose_220731_4.pt'))
+model.load_state_dict(torch.load('resnet_pose_220731_2.pt'))
 
 transform = transforms.Compose([transforms.ToTensor(), transforms.ConvertImageDtype(torch.float)])
 im_folder = '../validation_data_3D_' + date + '_er_ob/images_real/'
@@ -82,10 +83,10 @@ crop_coor_files_add = [crop_coor_folder + file_name for file_name in crop_files]
 #data = CustomImageDataset(im_files_add, coor_3d_files_add, crop_coor_files_add, transform=transform)
 #val_size = batch_size
 #train_size = len(data) - val_size
-#_, val_data = torch.utils.data.random_split(data, [train_size, val_size])
+#val_data = torch.utils.data.Subset(data, range(val_size))
 
 val_data = CustomImageDataset(im_files_add, coor_3d_files_add, crop_coor_files_add, transform=transform)
-val_loader = DataLoader(val_data, batch_size=batch_size,shuffle=True)
+val_loader = DataLoader(val_data, batch_size=batch_size,shuffle=False)
 
 optimizer = optim.Adam(model.parameters(), lr=lr)
 criterion = nn.MSELoss(reduction='none')
@@ -207,9 +208,9 @@ def triangulate_3d(pose_b, pose_s1, pose_s2, proj_params):
 
 def triangulate_3d_list(pose_b, pose_s1, pose_s2, proj_params):
     coor = np.zeros((2,3))
-    coor[:,0] = torch.tensor(pose_b)
-    coor[:,1] = torch.tensor(pose_s1)
-    coor[:,2] = torch.tensor(pose_s2)
+    coor[:,0] = np.array(pose_b)
+    coor[:,1] = np.array(pose_s1)
+    coor[:,2] = np.array(pose_s2)
 
     fa1p00 = proj_params[0,0,0]
     fa1p10 = proj_params[0,0,1]
@@ -261,8 +262,133 @@ def triangulate_3d_list(pose_b, pose_s1, pose_s2, proj_params):
             (fc1p00+fc1p10*x[1]+fc1p01*x[0]+fc1p20*x[1]**2+fc1p11*x[1]*x[0]+fc1p30*x[1]**3+fc1p21*x[1]**2*x[0] - coor[0,2])**2 +
             (fc2p00+fc2p10*x[1]+fc2p01*x[2]+fc2p20*x[1]**2+fc2p11*x[1]*x[2]+fc2p30*x[1]**3+fc2p21*x[1]**2*x[2] - coor[1,2])**2)
     bnds = ((-30,-30,50),(30,30,100))
-    res = least_squares(fun, (0, 0, 70), method = 'dogbox', bounds = bnds)
+
+    fun1 = lambda x: ((fa1p00+fa1p10*x[2]+fa1p01*x[0]+fa1p20*x[2]**2+fa1p11*x[2]*x[0]+fa1p30*x[2]**3+fa1p21*x[2]**2*x[0] - coor[0,0])**2 +
+            (fa2p00+fa2p10*x[2]+fa2p01*x[1]+fa2p20*x[2]**2+fa2p11*x[2]*x[1]+fa2p30*x[2]**3+fa2p21*x[2]**2*x[1] - coor[1,0])**2 +
+            (fb1p00+fb1p10*x[0]+fb1p01*x[1]+fb1p20*x[0]**2+fb1p11*x[0]*x[1]+fb1p30*x[0]**3+fb1p21*x[0]**2*x[1] - coor[0,1])**2 +
+            (fb2p00+fb2p10*x[0]+fb2p01*x[2]+fb2p20*x[0]**2+fb2p11*x[0]*x[2]+fb2p30*x[0]**3+fb2p21*x[0]**2*x[2] - coor[1,1])**2)
+
+    fun2 = lambda x: ((fa1p00+fa1p10*x[2]+fa1p01*x[0]+fa1p20*x[2]**2+fa1p11*x[2]*x[0]+fa1p30*x[2]**3+fa1p21*x[2]**2*x[0] - coor[0,0])**2 +
+            (fa2p00+fa2p10*x[2]+fa2p01*x[1]+fa2p20*x[2]**2+fa2p11*x[2]*x[1]+fa2p30*x[2]**3+fa2p21*x[2]**2*x[1] - coor[1,0])**2 +
+            (fc1p00+fc1p10*x[1]+fc1p01*x[0]+fc1p20*x[1]**2+fc1p11*x[1]*x[0]+fc1p30*x[1]**3+fc1p21*x[1]**2*x[0] - coor[0,2])**2 +
+            (fc2p00+fc2p10*x[1]+fc2p01*x[2]+fc2p20*x[1]**2+fc2p11*x[1]*x[2]+fc2p30*x[1]**3+fc2p21*x[1]**2*x[2] - coor[1,2])**2)
+    
+    fun3 = lambda x: ((fb1p00+fb1p10*x[0]+fb1p01*x[1]+fb1p20*x[0]**2+fb1p11*x[0]*x[1]+fb1p30*x[0]**3+fb1p21*x[0]**2*x[1] - coor[0,1])**2 +
+            (fb2p00+fb2p10*x[0]+fb2p01*x[2]+fb2p20*x[0]**2+fb2p11*x[0]*x[2]+fb2p30*x[0]**3+fb2p21*x[0]**2*x[2] - coor[1,1])**2 +
+            (fc1p00+fc1p10*x[1]+fc1p01*x[0]+fc1p20*x[1]**2+fc1p11*x[1]*x[0]+fc1p30*x[1]**3+fc1p21*x[1]**2*x[0] - coor[0,2])**2 +
+            (fc2p00+fc2p10*x[1]+fc2p01*x[2]+fc2p20*x[1]**2+fc2p11*x[1]*x[2]+fc2p30*x[1]**3+fc2p21*x[1]**2*x[2] - coor[1,2])**2)
+
+    #res1 = least_squares(fun1, (0., 0., 70.), method = 'dogbox', bounds = bnds)
+    #res2 = least_squares(fun2, (0., 0., 70.), method = 'dogbox', bounds = bnds)
+    #res3 = least_squares(fun3, (0., 0., 70.), method = 'dogbox', bounds = bnds)
+
+    #min_cost = math.inf
+    #if (res1.fun < min_cost):
+    #    min_cost = res1.fun
+    #    res = res1
+    #if (res2.fun < min_cost):
+    #    min_cost = res2.fun
+    #    res = res2
+
+    #if (res3.fun < min_cost):
+    #    min_cost = res3.fun
+    #    res = res3
+
+    res = least_squares(fun, (0., 0., 70.), method = 'dogbox', bounds = bnds)
     return res.x
+
+def triangulate_3d_list_fun(pose_b, pose_s1, pose_s2, proj_params):
+    coor = np.zeros((2,3))
+    coor[:,0] = np.array(pose_b)
+    coor[:,1] = np.array(pose_s1)
+    coor[:,2] = np.array(pose_s2)
+
+    fa1p00 = proj_params[0,0,0]
+    fa1p10 = proj_params[0,0,1]
+    fa1p01 = proj_params[0,0,2]
+    fa1p20 = proj_params[0,0,3]
+    fa1p11 = proj_params[0,0,4]
+    fa1p30 = proj_params[0,0,5]
+    fa1p21 = proj_params[0,0,6]
+    fa2p00 = proj_params[0,1,0]
+    fa2p10 = proj_params[0,1,1]
+    fa2p01 = proj_params[0,1,2]
+    fa2p20 = proj_params[0,1,3]
+    fa2p11 = proj_params[0,1,4]
+    fa2p30 = proj_params[0,1,5]
+    fa2p21 = proj_params[0,1,6]
+    fb1p00 = proj_params[0,2,0]
+    fb1p10 = proj_params[0,2,1]
+    fb1p01 = proj_params[0,2,2]
+    fb1p20 = proj_params[0,2,3]
+    fb1p11 = proj_params[0,2,4]
+    fb1p30 = proj_params[0,2,5]
+    fb1p21 = proj_params[0,2,6]
+    fb2p00 = proj_params[0,3,0]
+    fb2p10 = proj_params[0,3,1]
+    fb2p01 = proj_params[0,3,2]
+    fb2p20 = proj_params[0,3,3]
+    fb2p11 = proj_params[0,3,4]
+    fb2p30 = proj_params[0,3,5]
+    fb2p21 = proj_params[0,3,6]
+    fc1p00 = proj_params[0,4,0]
+    fc1p10 = proj_params[0,4,1]
+    fc1p01 = proj_params[0,4,2]
+    fc1p20 = proj_params[0,4,3]
+    fc1p11 = proj_params[0,4,4]
+    fc1p30 = proj_params[0,4,5]
+    fc1p21 = proj_params[0,4,6]
+    fc2p00 = proj_params[0,5,0]
+    fc2p10 = proj_params[0,5,1]
+    fc2p01 = proj_params[0,5,2]
+    fc2p20 = proj_params[0,5,3]
+    fc2p11 = proj_params[0,5,4]
+    fc2p30 = proj_params[0,5,5]
+    fc2p21 = proj_params[0,5,6]
+    
+    fun = lambda x: ((fa1p00+fa1p10*x[2]+fa1p01*x[0]+fa1p20*x[2]**2+fa1p11*x[2]*x[0]+fa1p30*x[2]**3+fa1p21*x[2]**2*x[0] - coor[0,0])**2 +
+            (fa2p00+fa2p10*x[2]+fa2p01*x[1]+fa2p20*x[2]**2+fa2p11*x[2]*x[1]+fa2p30*x[2]**3+fa2p21*x[2]**2*x[1] - coor[1,0])**2 +
+            (fb1p00+fb1p10*x[0]+fb1p01*x[1]+fb1p20*x[0]**2+fb1p11*x[0]*x[1]+fb1p30*x[0]**3+fb1p21*x[0]**2*x[1] - coor[0,1])**2 +
+            (fb2p00+fb2p10*x[0]+fb2p01*x[2]+fb2p20*x[0]**2+fb2p11*x[0]*x[2]+fb2p30*x[0]**3+fb2p21*x[0]**2*x[2] - coor[1,1])**2 +
+            (fc1p00+fc1p10*x[1]+fc1p01*x[0]+fc1p20*x[1]**2+fc1p11*x[1]*x[0]+fc1p30*x[1]**3+fc1p21*x[1]**2*x[0] - coor[0,2])**2 +
+            (fc2p00+fc2p10*x[1]+fc2p01*x[2]+fc2p20*x[1]**2+fc2p11*x[1]*x[2]+fc2p30*x[1]**3+fc2p21*x[1]**2*x[2] - coor[1,2])**2)
+    bnds = ((-30,-30,50),(30,30,100))
+
+    fun1 = lambda x: ((fa1p00+fa1p10*x[2]+fa1p01*x[0]+fa1p20*x[2]**2+fa1p11*x[2]*x[0]+fa1p30*x[2]**3+fa1p21*x[2]**2*x[0] - coor[0,0])**2 +
+            (fa2p00+fa2p10*x[2]+fa2p01*x[1]+fa2p20*x[2]**2+fa2p11*x[2]*x[1]+fa2p30*x[2]**3+fa2p21*x[2]**2*x[1] - coor[1,0])**2 +
+            (fb1p00+fb1p10*x[0]+fb1p01*x[1]+fb1p20*x[0]**2+fb1p11*x[0]*x[1]+fb1p30*x[0]**3+fb1p21*x[0]**2*x[1] - coor[0,1])**2 +
+            (fb2p00+fb2p10*x[0]+fb2p01*x[2]+fb2p20*x[0]**2+fb2p11*x[0]*x[2]+fb2p30*x[0]**3+fb2p21*x[0]**2*x[2] - coor[1,1])**2)
+
+    fun2 = lambda x: ((fa1p00+fa1p10*x[2]+fa1p01*x[0]+fa1p20*x[2]**2+fa1p11*x[2]*x[0]+fa1p30*x[2]**3+fa1p21*x[2]**2*x[0] - coor[0,0])**2 +
+            (fa2p00+fa2p10*x[2]+fa2p01*x[1]+fa2p20*x[2]**2+fa2p11*x[2]*x[1]+fa2p30*x[2]**3+fa2p21*x[2]**2*x[1] - coor[1,0])**2 +
+            (fc1p00+fc1p10*x[1]+fc1p01*x[0]+fc1p20*x[1]**2+fc1p11*x[1]*x[0]+fc1p30*x[1]**3+fc1p21*x[1]**2*x[0] - coor[0,2])**2 +
+            (fc2p00+fc2p10*x[1]+fc2p01*x[2]+fc2p20*x[1]**2+fc2p11*x[1]*x[2]+fc2p30*x[1]**3+fc2p21*x[1]**2*x[2] - coor[1,2])**2)
+
+    fun3 = lambda x: ((fb1p00+fb1p10*x[0]+fb1p01*x[1]+fb1p20*x[0]**2+fb1p11*x[0]*x[1]+fb1p30*x[0]**3+fb1p21*x[0]**2*x[1] - coor[0,1])**2 +
+            (fb2p00+fb2p10*x[0]+fb2p01*x[2]+fb2p20*x[0]**2+fb2p11*x[0]*x[2]+fb2p30*x[0]**3+fb2p21*x[0]**2*x[2] - coor[1,1])**2 +
+            (fc1p00+fc1p10*x[1]+fc1p01*x[0]+fc1p20*x[1]**2+fc1p11*x[1]*x[0]+fc1p30*x[1]**3+fc1p21*x[1]**2*x[0] - coor[0,2])**2 +
+            (fc2p00+fc2p10*x[1]+fc2p01*x[2]+fc2p20*x[1]**2+fc2p11*x[1]*x[2]+fc2p30*x[1]**3+fc2p21*x[1]**2*x[2] - coor[1,2])**2)
+
+    #res1 = least_squares(fun1, (0., 0., 70.), method = 'dogbox', bounds = bnds)
+    #res2 = least_squares(fun2, (0., 0., 70.), method = 'dogbox', bounds = bnds)
+    #res3 = least_squares(fun3, (0., 0., 70.), method = 'dogbox', bounds = bnds)
+
+    #min_cost = math.inf
+    #if (res1.fun < min_cost):
+    #    min_cost = res1.fun
+    #    res = res1
+    #if (res2.fun < min_cost):
+    #    min_cost = res2.fun
+    #    res = res2
+
+    #if (res3.fun < min_cost):
+    #    min_cost = res3.fun
+    #    res = res3
+
+    res = least_squares(fun, (0., 0., 70.), method = 'dogbox', bounds = bnds)
+    return res.x, res.fun
+
+
 
 def save_images(pose_recon_b, pose_recon_s1, pose_recon_s2, pose_data_b, pose_data_s1, pose_data_s2, im_b, im_s1, im_s2, counter, output_dir):
     for i in range(pose_recon_b.shape[0]):
@@ -298,12 +424,39 @@ def save_images(pose_recon_b, pose_recon_s1, pose_recon_s2, pose_data_b, pose_da
         plt.close()
         counter = counter + 1
 
-def triangulate_3d_parallel(pose_recon_b_list, pose_recon_s1_list, pose_recon_s2_list, proj_params_cpu):
+def triangulate_3d_parallel_backbone(pose_recon_b_list, pose_recon_s1_list, pose_recon_s2_list, proj_params_cpu):
     if __name__ == "__main__":
         pool = mp.Pool(16)
         results = pool.starmap(triangulate_3d_list, zip(pose_recon_b_list, pose_recon_s1_list, pose_recon_s2_list, repeat(proj_params_cpu)))
         pool.close()
     return results
+
+def triangulate_3d_parallel_eyes(eyes_recon_b_list, eyes_recon_s1_list, eyes_recon_s2_list, proj_params_cpu):
+    results = []
+    #for i in range(0,len(eyes_recon_b_list)):
+    #    results.append(triangulate_3d_eyes(eyes_recon_b_list[i], eyes_recon_s1_list[i], eyes_recon_s2_list[i], proj_params_cpu))
+
+    if __name__ == "__main__":
+        pool = mp.Pool(16)
+        results = pool.starmap(triangulate_3d_eyes, zip(eyes_recon_b_list, eyes_recon_s1_list, eyes_recon_s2_list, repeat(proj_params_cpu)))
+        pool.close()
+    return results
+
+def triangulate_3d_eyes(eyes_recon_b_list, eyes_recon_s1_list, eyes_recon_s2_list, proj_params_cpu):
+    recon_eye_3d = [[],[]]
+    for point in range(0,2):
+        min_cost = math.inf
+        for perm_idx1 in range(0,2):
+            for perm_idx2 in range(0,2):
+                recon_coor_3d_temp, cost = triangulate_3d_list_fun(eyes_recon_b_list[point], eyes_recon_s1_list[perm_idx1], eyes_recon_s2_list[perm_idx2], proj_params_cpu)
+                if (cost < min_cost):
+                    #print(eyes_recon_b_list[:][point], eyes_recon_s1_list[:][perm_idx1], eyes_recon_s2_list[:][perm_idx2])
+                    recon_eye_3d[point] = recon_coor_3d_temp
+                    min_cost = cost
+    return recon_eye_3d
+
+
+
 
 def final_loss(bce_loss, mu, logvar):
     BCE = bce_loss
@@ -356,18 +509,29 @@ def validate(model, dataloader, proj_params):
                 pose_recon_s1_list = torch.swapaxes(pose_recon_s1[:,:,0:10] + 1, 1, 2).reshape(pose_recon_s1.shape[0]*10, 2).tolist()
                 pose_recon_s2_list = torch.swapaxes(pose_recon_s2[:,:,0:10] + 1, 1, 2).reshape(pose_recon_s2.shape[0]*10, 2).tolist()
                 current_time = time.time()
-                results = triangulate_3d_parallel(pose_recon_b_list, pose_recon_s1_list, pose_recon_s2_list, proj_params_cpu)
-                rerecon_coor_3d_partial = torch.FloatTensor(np.array(results))
-                rerecon_coor_3d[:,:,0:10] = torch.swapaxes(rerecon_coor_3d_partial.reshape(pose_recon_b.shape[0], 10, 3), 1, 2)
-                for batch_sample in range(0, pose_recon_b.shape[0]):
-                    for point in range(10, 12):
-                        min_cost = torch.tensor(float('inf'))
-                        for perm_idx1 in range(10,12):
-                            for perm_idx2 in range(10,12):
-                                recon_coor_3d_temp, cost = triangulate_3d(pose_recon_b[batch_sample, :, point] + 1, pose_recon_s1[batch_sample, :, perm_idx1] + 1, pose_recon_s2[batch_sample, :, perm_idx2] + 1, proj_params_cpu)
-                                if (cost < min_cost):
-                                    rerecon_coor_3d[batch_sample, :, point] = recon_coor_3d_temp
-                                    min_cost = cost
+                results = triangulate_3d_parallel_backbone(pose_recon_b_list, pose_recon_s1_list, pose_recon_s2_list, proj_params_cpu)
+                rerecon_coor_3d_backbone = torch.FloatTensor(np.array(results))
+                rerecon_coor_3d[:,:,0:10] = torch.swapaxes(rerecon_coor_3d_backbone.reshape(pose_recon_b.shape[0], 10, 3), 1, 2)
+                eyes_recon_b_list = torch.swapaxes((pose_recon_b[:,:,10:12] + 1), 1, 2).tolist() # This swapping is done because slicing first element of a nested list is not possible otherwise
+                eyes_recon_s1_list = torch.swapaxes((pose_recon_s1[:,:,10:12] + 1), 1, 2).tolist() # This swapping is done because slicing first element of a nested list is not possible otherwise
+                eyes_recon_s2_list = torch.swapaxes((pose_recon_s2[:,:,10:12] + 1), 1, 2).tolist() # This swapping is done because slicing first element of a nested list is not possible otherwise
+
+                results = triangulate_3d_parallel_eyes(eyes_recon_b_list, eyes_recon_s1_list, eyes_recon_s2_list, proj_params_cpu)
+                rerecon_coor_3d[:,:,10:12] = torch.swapaxes(torch.FloatTensor(np.array(results)), 1, 2)
+                #for batch_sample in range(0, pose_recon_b.shape[0]):
+                    #for point in range(10, 12):
+                        #min_cost = torch.tensor(float('inf'))
+                        #for perm_idx1 in range(10,12):
+                            #for perm_idx2 in range(10,12):
+                                #recon_coor_3d_temp, cost = triangulate_3d_list_fun(pose_recon_b[batch_sample, :, point] + 1, pose_recon_s1[batch_sample, :, perm_idx1] + 1, pose_recon_s2[batch_sample, :, perm_idx2] + 1, proj_params_cpu)
+                                #print(pose_recon_b[batch_sample, :, point] + 1, pose_recon_s1[batch_sample, :, perm_idx1] + 1, pose_recon_s2[batch_sample, :, perm_idx2] + 1)
+                                #print(eyes_recon_b_list[batch_sample][point-10][:], eyes_recon_s1_list[batch_sample][perm_idx1-10][:], eyes_recon_s2_list[batch_sample][perm_idx2-10][:])
+                                #print('')
+                                #recon_coor_3d_temp, cost = triangulate_3d_list_fun(eyes_recon_b_list[batch_sample][point-10][:], eyes_recon_s1_list[batch_sample][perm_idx1-10][:], eyes_recon_s2_list[batch_sample][perm_idx2-10][:], proj_params_cpu)
+
+                                #if (torch.tensor(cost) < min_cost):
+                                #    rerecon_coor_3d[batch_sample, :, point] = torch.tensor(recon_coor_3d_temp)
+                                #    min_cost = torch.tensor(cost)
                 print(time.time() - current_time, flush=True)
                 pose_rerecon_b, pose_rerecon_s1, pose_rerecon_s2 = calc_proj_w_refra(rerecon_coor_3d, proj_params_cpu)
                 pose_rerecon_b[:,0,:] = pose_rerecon_b[:,0,:] - crop_coor_data_cpu[:,0,2,None]
@@ -382,7 +546,7 @@ def validate(model, dataloader, proj_params):
                 pose_loss = criterion(rerecon_coor_3d, coor_3d_data_cpu)
                 pose_loss = torch.sqrt(torch.sum(pose_loss, dim=(1)))
                 pose_loss = torch.sum(pose_loss, dim=(1))/12
-                loss_idx = (pose_loss > 0.35) & (pose_loss < 0.5)
+                loss_idx = (pose_loss > 0.35) & (pose_loss < 1)
                 im_b = im_three_channels[loss_idx,0,:,:]; im_s1 = im_three_channels[loss_idx,1,:,:]; im_s2 = im_three_channels[loss_idx,2,:,:]; 
                 save_images(pose_recon_b[loss_idx,:,:], pose_recon_s1[loss_idx,:,:], pose_recon_s2[loss_idx,:,:], pose_data_b[loss_idx,:,:].cpu(), pose_data_s1[loss_idx,:,:].cpu(), pose_data_s2[loss_idx,:,:].cpu(), im_b, im_s1, im_s2, counter, output_dir)
                 counter = counter + im_b.shape[0]
@@ -471,9 +635,11 @@ for epoch in range(epochs):
     val_epoch_loss, pose_loss_array = validate(model, val_loader, proj_params)
     pose_loss_array = np.concatenate(pose_loss_array)
     plt.hist(pose_loss_array, bins='auto', density=True)
-    plt.savefig(output_dir + '/histogram.svg')
-    plt.ylim([0, 50])
+    plt.ylim([0, 12])
     plt.xlim([0, 2])
+    plt.title(str(val_epoch_loss))
+    plt.savefig(output_dir + '/histogram.svg')
+    plt.title(str(val_epoch_loss))
     plt.close()
     #val_loss.append(val_epoch_loss)
     print(f"Val Loss: {val_epoch_loss:.4f}",flush=True)

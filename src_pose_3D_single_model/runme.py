@@ -28,7 +28,7 @@ epochs = args['epochs']
 output_dir = args['output_dir']
 
 lr = 0.001
-date = '220802'
+date = '220719'
 
 if (not os.path.isdir(output_dir)):
     os.mkdir(output_dir)
@@ -206,7 +206,7 @@ for epoch in range(epochs):
     print(f"Train Loss: {train_epoch_loss:.4f}",flush=True)
     print(f"Val Loss: {val_epoch_loss:.4f}",flush=True)
 
-torch.save(model.state_dict(), 'resnet_pose_' + date + '_2.2.pt')
+torch.save(model.state_dict(), 'resnet_pose_' + date + '_2.pt')
 print(type(train_pose_loss_array))
 
 plt.plot(train_loss[20:], color='green')
