@@ -28,7 +28,7 @@ epochs = args['epochs']
 output_dir = args['output_dir']
 
 lr = 0.001
-date = '220719'
+date = '220810'
 
 if (not os.path.isdir(output_dir)):
     os.mkdir(output_dir)

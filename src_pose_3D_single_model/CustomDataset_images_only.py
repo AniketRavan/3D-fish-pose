@@ -25,6 +25,8 @@ class CustomImageDataset(Dataset):
 
     def __getitem__(self, idx):
         image = Image.open(self.img_files_address[idx])
+        filename = self.img_files_address[idx][-22:]
+        #print(filename)
         image = self.transform(image)
         im_b = image[:,:141,:]
         im_s1 = image[:,141:282,:]
@@ -35,4 +37,4 @@ class CustomImageDataset(Dataset):
         im_three_channels[2,:,:] = im_s2
         crop_coor = torch.load(self.crop_coor_files_add[idx])
         coor_3d = torch.load(self.coor_3d_files_add[idx])
-        return im_three_channels, coor_3d, crop_coor
+        return im_three_channels, coor_3d, crop_coor, filename
