@@ -15,6 +15,7 @@ from ResNet_Blocks_3D_4blocks import resnet18
 import time
 from multiprocessing import Pool
 import os
+import pdb
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-e','--epochs',default=10, type=int, help='number of epochs to train the VAE for')
@@ -28,7 +29,7 @@ epochs = args['epochs']
 output_dir = args['output_dir']
 
 lr = 0.001
-date = '220810'
+date = '220827'
 
 if (not os.path.isdir(output_dir)):
     os.mkdir(output_dir)
@@ -41,7 +42,7 @@ n_cuda = torch.cuda.device_count()
 if (torch.cuda.is_available()):
     print(str(n_cuda) + 'GPUs are available!')
 else: print('Cuda is not available')
-batch_size = 380*n_cuda
+batch_size = 400*n_cuda
 
 if torch.cuda.device_count() > 1:
   print("Using " + str(n_cuda) + " GPUs!")
@@ -68,6 +69,7 @@ data = CustomImageDataset(im_files_add, pose_files_add, eye_coor_files_add, crop
 train_size = int(len(data)*0.9)
 val_size = len(data) - train_size
 train_data, val_data = torch.utils.data.random_split(data, [train_size, val_size])
+print(len(data))
 
 train_loader = DataLoader(train_data, batch_size=batch_size,shuffle=True,num_workers=n_cuda*12,prefetch_factor=2,persistent_workers=True)
 val_loader = DataLoader(val_data, batch_size=batch_size,shuffle=False,num_workers=n_cuda*12,prefetch_factor=2,persistent_workers=True)
@@ -109,7 +111,6 @@ def fit(model, dataloader):
     train_loss = running_loss/len(dataloader.dataset)
     train_pose_loss = running_pose_loss/len(dataloader.dataset)
     return train_loss, train_pose_loss
-
 
 def validate(model, dataloader):
     model.eval()

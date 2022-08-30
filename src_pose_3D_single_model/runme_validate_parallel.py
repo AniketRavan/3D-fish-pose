@@ -32,11 +32,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-e','--epochs',default=1, type=int, help='number of epochs to train the VAE for')
 parser.add_argument('-o','--output_dir', default="validations", type=str, help='path to store output images and plots')
 parser.add_argument('-p','--proj_params', default="proj_params_101019_corrected_new", type=str, help='path to calibrated camera parameters')
+parser.add_argument('-i','--input_dir', default='../validation_data_3D_220809_er', type=str, help='path to input data folder')
 
 imageSizeX = 141
 imageSizeY = 141
 
-date = '220809'
+date = '220828'
 
 args = vars(parser.parse_args())
 
@@ -44,6 +45,7 @@ proj_params_path = args['proj_params']
 print(proj_params_path)
 epochs = args['epochs']
 output_dir = args['output_dir']
+data_folder = args['input_dir']
 proj_params = sio.loadmat(proj_params_path)
 proj_params = torch.tensor(proj_params['proj_params'])
 proj_params = proj_params[None,:,:]
@@ -65,8 +67,8 @@ model = nn.DataParallel(model)
 if (not os.path.isdir(output_dir)):
     os.mkdir(output_dir)
 
-model.load_state_dict(torch.load('resnet_pose_220802_2.pt'))
-data_folder = '../validation_data_3D_' + date + '_fs'
+model.load_state_dict(torch.load('resnet_pose_220827_2.pt'))
+#data_folder = '../validation_data_3D_' + date + '_er'
 
 transform = transforms.Compose([transforms.ToTensor(), transforms.ConvertImageDtype(torch.float)])
 im_folder = data_folder + '/images_real/'
@@ -292,10 +294,6 @@ def triangulate_3d_list(pose_b, pose_s1, pose_s2, proj_params):
     #    min_cost = res2.fun
     #    res = res2
 
-    #if (res3.fun < min_cost):
-    #    min_cost = res3.fun
-    #    res = res3
-
     res = least_squares(fun, (0., 0., 70.), method = 'dogbox', bounds = bnds)
     return res.x
 
@@ -470,6 +468,8 @@ def validate(model, dataloader, proj_params):
     model.eval()
     running_loss = 0.0
     pose_loss_array = []
+    reconstructed_pose = []
+    all_filenames = []
     counter = 0
     with torch.no_grad():
         #for i, data in tqdm(enumerate(dataloader), total=int(len(val_data)/dataloader.batch_size)):
@@ -521,20 +521,6 @@ def validate(model, dataloader, proj_params):
 
                 results = triangulate_3d_parallel_eyes(eyes_recon_b_list, eyes_recon_s1_list, eyes_recon_s2_list, proj_params_cpu)
                 rerecon_coor_3d[:,:,10:12] = torch.swapaxes(torch.FloatTensor(np.array(results)), 1, 2)
-                #for batch_sample in range(0, pose_recon_b.shape[0]):
-                    #for point in range(10, 12):
-                        #min_cost = torch.tensor(float('inf'))
-                        #for perm_idx1 in range(10,12):
-                            #for perm_idx2 in range(10,12):
-                                #recon_coor_3d_temp, cost = triangulate_3d_list_fun(pose_recon_b[batch_sample, :, point] + 1, pose_recon_s1[batch_sample, :, perm_idx1] + 1, pose_recon_s2[batch_sample, :, perm_idx2] + 1, proj_params_cpu)
-                                #print(pose_recon_b[batch_sample, :, point] + 1, pose_recon_s1[batch_sample, :, perm_idx1] + 1, pose_recon_s2[batch_sample, :, perm_idx2] + 1)
-                                #print(eyes_recon_b_list[batch_sample][point-10][:], eyes_recon_s1_list[batch_sample][perm_idx1-10][:], eyes_recon_s2_list[batch_sample][perm_idx2-10][:])
-                                #print('')
-                                #recon_coor_3d_temp, cost = triangulate_3d_list_fun(eyes_recon_b_list[batch_sample][point-10][:], eyes_recon_s1_list[batch_sample][perm_idx1-10][:], eyes_recon_s2_list[batch_sample][perm_idx2-10][:], proj_params_cpu)
-
-                                #if (torch.tensor(cost) < min_cost):
-                                #    rerecon_coor_3d[batch_sample, :, point] = torch.tensor(recon_coor_3d_temp)
-                                #    min_cost = torch.tensor(cost)
                 print(time.time() - current_time, flush=True)
                 pose_rerecon_b, pose_rerecon_s1, pose_rerecon_s2 = calc_proj_w_refra(rerecon_coor_3d, proj_params_cpu)
                 pose_rerecon_b[:,0,:] = pose_rerecon_b[:,0,:] - crop_coor_data_cpu[:,0,2,None]
@@ -551,31 +537,16 @@ def validate(model, dataloader, proj_params):
                 pose_loss = torch.sum(pose_loss, dim=(1))/12
                 loss_idx = (pose_loss > 0.35) & (pose_loss < 1)
                 im_b = im_three_channels[loss_idx,0,:,:]; im_s1 = im_three_channels[loss_idx,1,:,:]; im_s2 = im_three_channels[loss_idx,2,:,:]; 
-                #print(loss_idx.nonzero())
                 loss_filenames = []
                 if (len(loss_idx.nonzero()) > 0):
                     [loss_filenames.append(filename[element]) for element in loss_idx.nonzero()]
                     save_images(pose_recon_b[loss_idx,:,:], pose_recon_s1[loss_idx,:,:], pose_recon_s2[loss_idx,:,:], pose_data_b[loss_idx,:,:].cpu(), pose_data_s1[loss_idx,:,:].cpu(), pose_data_s2[loss_idx,:,:].cpu(), im_b, im_s1, im_s2, counter, loss_filenames, output_dir)
                 counter = counter + im_b.shape[0]
-                #pose_loss = criterion(pose_recon_b[:,:,0:10], pose_data_b[:,:,0:10]) + criterion(pose_recon_s1[:,:,0:10], pose_data_s1[:,:,0:10]) + criterion(pose_recon_s2[:,:,0:10], pose_data_s2[:,:,0:10])
-                #eye_loss_b = criterion(pose_recon_b[:,:,10:12],pose_data_b[:,:,10:12])
-                #eye_loss_s1 = criterion(pose_recon_s1[:,:,10:12],pose_data_s1[:,:,10:12])
-                #eye_loss_s2 = criterion(pose_recon_s2[:,:,10:12],pose_data_s2[:,:,10:12])
-                #eye_loss = eye_loss_b + eye_loss_s1 + eye_loss_s2
-                #pose_loss = torch.sum(pose_loss, dim=(1,2)); eye_loss = torch.sum(eye_loss, dim=(1,2))
-                #loss = pose_loss + eye_loss
-                #loss = torch.sqrt(loss)/12
-
-
-                #pose_loss = torch.sum(pose_loss, dim=(1,2)); eye_loss = torch.sum(eye_loss, dim=(1,2))
-                #loss = pose_loss + eye_loss
-                #max_idx = torch.argmax(loss).cpu()
-                #print(max_idx)
-                #print(torch.max(loss))
                 loss = torch.sum(torch.sum(pose_loss))
                 pose_loss_array.append(pose_loss)
+                reconstructed_pose.append(rerecon_coor_3d.cpu())
+                all_filenames.append(filename)
                 running_loss += loss.item()
-                #running_pose_loss += pose_loss.item()
                 
                 # save the last batch input and output of every epoch
                 if i == int(len(val_data)/dataloader.batch_size) - 1:
@@ -633,22 +604,32 @@ def validate(model, dataloader, proj_params):
                     plt.close()
 
     val_loss = running_loss/len(dataloader.dataset)
-    return val_loss, pose_loss_array
+    return val_loss, pose_loss_array, reconstructed_pose, all_filenames
 
 train_loss = []
 val_loss = []
+pose_mat = {}
+filenames_mat = {}
 for epoch in range(epochs):
     print(f"Epoch {epoch+1} of {epochs}",flush=True)
-    val_epoch_loss, pose_loss_array = validate(model, val_loader, proj_params)
+    val_epoch_loss, pose_loss_array, reconstructed_pose, all_filenames = validate(model, val_loader, proj_params)
     pose_loss_array = np.concatenate(pose_loss_array)
+    reconstructed_pose = np.concatenate(reconstructed_pose)
+    all_filenames = np.concatenate(all_filenames)
+    pose_mat['reconstructed_pose'] = reconstructed_pose
+    filenames_mat['all_filenames'] = all_filenames
     plt.hist(pose_loss_array, bins='auto', density=True)
     plt.ylim([0, 12])
     plt.xlim([0, 2])
     plt.title(str(val_epoch_loss))
     plt.savefig(output_dir + '/histogram.svg')
-    plt.title(str(val_epoch_loss))
+    sio.savemat(output_dir + '/reconstructed_pose.mat', pose_mat)
+    sio.savemat(output_dir + '/all_filenames.mat', filenames_mat)
+    plt.title(str(np.mean(pose_loss_array)))
     plt.close()
+    print(val_epoch_loss, np.mean(pose_loss_array))
     #val_loss.append(val_epoch_loss)
-    print(f"Val Loss: {val_epoch_loss:.4f}",flush=True)
+    
+    print("Val Loss: " + str(np.mean(pose_loss_array)),flush=True)
 print('Results saved, exiting script')
 
