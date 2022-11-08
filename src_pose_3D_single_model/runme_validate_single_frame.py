@@ -23,6 +23,7 @@ import time
 import resource
 import pdb 
 import math
+from PIL import Image, ImageFile
 
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 resource.setrlimit(resource.RLIMIT_NOFILE, (4096, rlimit[1]))
@@ -70,7 +71,10 @@ model = nn.DataParallel(model)
 if (not os.path.isdir(output_dir)):
     os.mkdir(output_dir)
 
-model.load_state_dict(torch.load(model_file))
+if (not torch.cuda.is_available()):
+    model.load_state_dict(torch.load(model_file, map_location=torch.device('cpu')))
+else: model.load_state_dict(torch.load(model_file))
+
 
 transform = transforms.Compose([transforms.ToTensor(), transforms.ConvertImageDtype(torch.float)])
 im_folder = data_folder + '/images_real/'
@@ -91,8 +95,8 @@ crop_coor_files_add = [crop_coor_folder + file_name for file_name in crop_files]
 #train_size = len(data) - val_size
 #val_data = torch.utils.data.Subset(data, range(val_size))
 
-val_data = CustomImageDataset(im_files_add, coor_3d_files_add, crop_coor_files_add, transform=transform)
-val_loader = DataLoader(val_data, batch_size=batch_size,shuffle=False)
+#val_data = CustomImageDataset(im_files_add, coor_3d_files_add, crop_coor_files_add, transform=transform)
+#val_loader = DataLoader(val_data, batch_size=batch_size,shuffle=False)
 
 optimizer = optim.Adam(model.parameters(), lr=lr)
 criterion = nn.MSELoss(reduction='none')
@@ -608,46 +612,50 @@ def validate(model, dataloader, proj_params):
                         axs[4,m].set_axis_off()
                     plt.savefig(output_dir + "/epoch_" + str(idx[0]) + ".svg")
                     plt.close()
-
     val_loss = running_loss/len(dataloader.dataset)
     return val_loss, pose_loss_array, reconstructed_pose, recon_pose_b_list, recon_pose_s1_list, recon_pose_s2_list, all_filenames
 
-train_loss = []
-val_loss = []
-pose_mat = {}
-filenames_mat = {}
-recon_pose_b_dic = {}
-recon_pose_s1_dic = {}
-recon_pose_s2_dic = {}
-for epoch in range(epochs):
-    print(f"Epoch {epoch+1} of {epochs}",flush=True)
-    val_epoch_loss, pose_loss_array, reconstructed_pose, recon_pose_b_list, recon_pose_s1_list, recon_pose_s2_list, all_filenames = validate(model, val_loader, proj_params)
-    pose_loss_array = np.concatenate(pose_loss_array)
-    reconstructed_pose = np.concatenate(reconstructed_pose)
-    recon_pose_b_list = np.concatenate(recon_pose_b_list)
-    recon_pose_s1_list = np.concatenate(recon_pose_s1_list)
-    recon_pose_s2_list = np.concatenate(recon_pose_s2_list)
-    all_filenames = np.concatenate(all_filenames)
-    pose_mat['reconstructed_pose'] = reconstructed_pose
-    recon_pose_b_dic['recon_b'] = recon_pose_b_list
-    recon_pose_s1_dic['recon_s1'] = recon_pose_s1_list
-    recon_pose_s2_dic['recon_s2'] = recon_pose_s2_list
-    filenames_mat['all_filenames'] = all_filenames
-    plt.hist(pose_loss_array, bins='auto', density=True)
-    plt.ylim([0, 12])
-    plt.xlim([0, 2])
-    plt.title(str(val_epoch_loss))
-    plt.savefig(output_dir + '/histogram.svg')
-    sio.savemat(output_dir + '/reconstructed_pose_' + date[7:] + '_' + model_file[12:34] + '_val_220919.mat', pose_mat)
-    sio.savemat(output_dir + '/all_filenames_' + date[7:] + '_' + model_file[12:34] + '_val_220919.mat', filenames_mat)
-    sio.savemat(output_dir + '/recon_b_' + date[7:] + '_' + model_file[12:34] + '_val_220919.mat', recon_pose_b_dic)
-    sio.savemat(output_dir + '/recon_s1_' + date[7:] + '_' + model_file[12:34] + '_val_220919.mat', recon_pose_s1_dic)
-    sio.savemat(output_dir + '/recon_s2_' + date[7:] + '_' + model_file[12:34] + '_val_220919.mat', recon_pose_s2_dic)
-    plt.title(str(np.mean(pose_loss_array)))
-    plt.close()
-    print(val_epoch_loss, np.mean(pose_loss_array))
-    #val_loss.append(val_epoch_loss)
-    
-    print("Val Loss: " + str(np.mean(pose_loss_array)),flush=True)
-print('Results saved, exiting script')
+model.eval()
+running_loss = 0.0
+pose_loss_array = []
+reconstructed_pose = []
+recon_pose_b_list = []
+recon_pose_s1_list = []
+recon_pose_s2_list = []
+all_filenames = []
+counter = 0
+im_add = im_folder + 'im_010318_1257_02_078' + '.png'
+im_add = 'test/im.png'
+image = Image.open(im_add)
+image = transform(image)
+im_b = image[:,:141,:]
+im_s1 = image[:,141:282,:]
+im_s2 = image[:,282:,:]
+im_three_channels = torch.zeros(1, 3, 141, 141)
+im_three_channels[0,0,:,:] = im_b
+im_three_channels[0,1,:,:] = im_s1
+im_three_channels[0,2,:,:] = im_s2
+with torch.no_grad():
+    #for i, data in tqdm(enumerate(dataloader), total=int(len(val_data)/dataloader.batch_size)):
+    #im_three_channels_cpu,coor_3d_data_cpu,crop_coor_data_cpu,filename = data
+    im_three_channels = im_three_channels.to(device)
+    #coor_3d_data = coor_3d_data_cpu.to(device)
+    #crop_coor_data = crop_coor_data_cpu.to(device)
+    #crop_split = crop_coor_data[:,0,[0,2,4,6,8,10]]
+    #proj_params = proj_params_cpu.to(device)
+    pose_recon_b, pose_recon_s1, pose_recon_s2 = model(im_three_channels)
+    _,axs = plt.subplots(nrows=1, ncols=3)
+    axs[0].imshow(im_three_channels[0,0,:,:].cpu(), cmap = 'gray')
+    axs[0].scatter(pose_recon_b[0,0,0:12].cpu(), pose_recon_b[0,1,0:12].cpu(), s=0.07, c='red', alpha=0.6)
+    axs[0].grid(False)
+    axs[0].set_axis_off()
+    axs[1].imshow(im_three_channels[0,1,:,:].cpu(), cmap = 'gray')
+    axs[1].scatter(pose_recon_s1[0,0,0:12].cpu(), pose_recon_s1[0,1,0:12].cpu(), s=0.07, c='red', alpha=0.6)
+    axs[1].grid(False)
+    axs[1].set_axis_off()
+    axs[2].imshow(im_three_channels[0,2,:,:].cpu(), cmap = 'gray')
+    axs[2].scatter(pose_recon_s2[0,0,0:12].cpu(), pose_recon_s2[0,1,0:12].cpu(), s=0.07, c='red', alpha=0.6)
+    axs[2].grid(False)
+    axs[2].set_axis_off()
+    plt.savefig('test/test.png')
 

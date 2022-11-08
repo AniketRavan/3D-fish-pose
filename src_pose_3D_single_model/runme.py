@@ -11,7 +11,7 @@ from torchvision import datasets
 from torch.utils.data import DataLoader
 from torchvision.utils import save_image
 from CustomDataset import CustomImageDataset
-from ResNet_Blocks_3D_4blocks import resnet18
+from ResNet_Blocks_3D_four_blocks import resnet18
 import time
 from multiprocessing import Pool
 import os
@@ -29,7 +29,7 @@ epochs = args['epochs']
 output_dir = args['output_dir']
 
 lr = 0.001
-date = '220827'
+date = '221103'
 
 if (not os.path.isdir(output_dir)):
     os.mkdir(output_dir)
@@ -101,8 +101,7 @@ def fit(model, dataloader):
         eye_loss_s1 = torch.min(criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]), criterion(pose_recon_s1[:,:,10:12], torch.flip(eye_coor_data[:,:,2:4],(2,))))
         eye_loss_s2 = torch.min(criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6]), criterion(pose_recon_s2[:,:,10:12], torch.flip(eye_coor_data[:,:,4:6],(2,)))) 
         eye_loss = eye_loss_b + eye_loss_s1 + eye_loss_s2
-        #eye_loss = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]) + criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]) + criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
-        loss = pose_loss + 1*eye_loss
+        loss = pose_loss + 5*eye_loss
         running_loss += loss.item()
         running_pose_loss += pose_loss.item()
         loss.backward()
@@ -126,11 +125,14 @@ def validate(model, dataloader):
             pose_recon_b, pose_recon_s1, pose_recon_s2 = model(im_three_channels)
             pose_loss = criterion(pose_recon_b[:,:,0:10], pose_data[:,:,0:10]) + criterion(pose_recon_s1[:,:,0:10], pose_data[:,:,10:20]) + criterion(pose_recon_s2[:,:,0:10], pose_data[:,:,20:30])
             eye_loss_b = torch.min(criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]), criterion(pose_recon_b[:,:,10:12], torch.flip(eye_coor_data[:,:,0:2],(2,))))
+            #eye_loss_b = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2])
             eye_loss_s1 = torch.min(criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]), criterion(pose_recon_s1[:,:,10:12], torch.flip(eye_coor_data[:,:,2:4],(2,))))
+            #eye_loss_s1 = criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4])
             eye_loss_s2 = torch.min(criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6]), criterion(pose_recon_s2[:,:,10:12], torch.flip(eye_coor_data[:,:,4:6],(2,)))) 
+            #eye_loss_s2 = criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
             eye_loss = eye_loss_b + eye_loss_s1 + eye_loss_s2
             #eye_loss = criterion(pose_recon_b[:,:,10:12],eye_coor_data[:,:,0:2]) + criterion(pose_recon_s1[:,:,10:12],eye_coor_data[:,:,2:4]) + criterion(pose_recon_s2[:,:,10:12],eye_coor_data[:,:,4:6])
-            loss = pose_loss + 1*eye_loss
+            loss = pose_loss + 5*eye_loss
             running_loss += loss.item()
             running_pose_loss += pose_loss.item()
 
@@ -196,19 +198,22 @@ val_loss = []
 train_pose_loss_array = []
 val_pose_loss_array = []
 
+best_loss = 500
 for epoch in range(epochs):
     print(f"Epoch {epoch+1} of {epochs}",flush=True)
     train_epoch_loss, train_pose_loss = fit(model, train_loader)
     val_epoch_loss, val_pose_loss = validate(model, val_loader)
     train_loss.append(train_epoch_loss)
     val_loss.append(val_epoch_loss)
+    if (val_epoch_loss < best_loss):
+        torch.save(model.state_dict(), 'resnet_pose_' + date + '_2_best_lambda_5.pt')
+        best_loss = val_epoch_loss
     train_pose_loss_array.append(train_pose_loss)
     val_pose_loss_array.append(val_pose_loss)
     print(f"Train Loss: {train_epoch_loss:.4f}",flush=True)
     print(f"Val Loss: {val_epoch_loss:.4f}",flush=True)
 
-torch.save(model.state_dict(), 'resnet_pose_' + date + '_2.pt')
-print(type(train_pose_loss_array))
+#torch.save(model.state_dict(), 'resnet_pose_' + date + '_2.pt')
 
 plt.plot(train_loss[20:], color='green')
 plt.plot(val_loss[20:], color='red')
