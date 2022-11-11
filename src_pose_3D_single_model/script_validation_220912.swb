@@ -1,0 +1,21 @@
+#!/bin/bash
+#SBATCH --job-name=220912_val
+#SBATCH --output="log/220912_validation.out"
+#SBATCH --error="error/220912_validation.err"
+#SBATCH --partition=gpux1
+#SBATCH --nodes=1
+#SBATCH --begin=now+0hour
+#SBATCH --time=24
+
+echo Running
+module load opence/1.5.1
+echo Module loaded
+python runme_validate_parallel.py -e 1  -d "220919_er" -o "outputs/val_220912_2_er_best_lambda_5_val_220919" -p "proj_params_101019_corrected_new" -m "resnet_pose_220912_2_best_lambda_5.pt"
+echo Finished_er
+python runme_validate_parallel.py -e 1  -d "220919_fs" -o "outputs/val_220912_2_fs_best_lambda_5_val_220919" -p "proj_params_201711_corrected" -m "resnet_pose_220912_2_best_lambda_5.pt"
+echo Finished fs
+python runme_validate_parallel.py -e 1  -d "220919_ob_oldCal" -o "outputs/val_220912_2_ob_oldCal_best_lambda_5_val_220919" -p "proj_params_201711_corrected" -m "resnet_pose_220912_2_best_lambda_5.pt"
+echo Finished ob_oldCal
+python runme_validate_parallel.py -e 1  -d "220919_ob_newCal" -o "outputs/val_220912_2_ob_newCal_best_lambda_5_val_220919" -p "proj_params_101019_corrected_new" -m "resnet_pose_220912_2_best_lambda_5.pt"
+echo Finished_ob_newCal
+echo Done
