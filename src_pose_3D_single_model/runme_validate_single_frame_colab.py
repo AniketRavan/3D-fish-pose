@@ -24,6 +24,7 @@ import resource
 import pdb 
 import math
 from PIL import Image, ImageFile
+import random
 
 rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
 resource.setrlimit(resource.RLIMIT_NOFILE, (4096, rlimit[1]))
@@ -616,9 +617,10 @@ recon_pose_s1_list = []
 recon_pose_s2_list = []
 all_filenames = []
 counter = 0
-im_add = im_folder + 'im_010318_1257_02_078' + '.png'
-im_add = 'test/im.png'
-image = Image.open(im_add)
+im_folder = '../validation_data_3D_221110_fs_phy/'
+im_files = os.listdir(im_folder + 'images_real')
+data_index = random.randrange(0,len(im_files))
+image = Image.open(im_folder + 'images_real/' + im_files[data_index])
 image = transform(image)
 im_b = image[:,:141,:]
 im_s1 = image[:,141:282,:]
@@ -649,5 +651,5 @@ with torch.no_grad():
     axs[2].scatter(pose_recon_s2[0,0,0:12].cpu(), pose_recon_s2[0,1,0:12].cpu(), s=0.07, c='red', alpha=0.6)
     axs[2].grid(False)
     axs[2].set_axis_off()
-    plt.savefig('test/test.png')
-
+    #plt.savefig('test/test.png')
+    plt.show()
