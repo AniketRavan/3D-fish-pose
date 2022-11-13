@@ -56,7 +56,7 @@ proj_params_cpu = proj_params
 
 lr = 0.001
 
-data_folder = '../validation_data_3D_' + date 
+data_folder = '../validation_files' + date 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = resnet18(3, 12, activation='leaky_relu').to(device)
 n_cuda = torch.cuda.device_count()
@@ -617,7 +617,7 @@ recon_pose_s1_list = []
 recon_pose_s2_list = []
 all_filenames = []
 counter = 0
-im_folder = '../validation_data_3D_221110_fs_phy/'
+im_folder = '../validation_files/'
 im_files = os.listdir(im_folder + 'images_real')
 data_index = random.randrange(0,len(im_files))
 image = Image.open(im_folder + 'images_real/' + im_files[data_index])
