@@ -630,13 +630,7 @@ im_three_channels[0,0,:,:] = im_b
 im_three_channels[0,1,:,:] = im_s1
 im_three_channels[0,2,:,:] = im_s2
 with torch.no_grad():
-    #for i, data in tqdm(enumerate(dataloader), total=int(len(val_data)/dataloader.batch_size)):
-    #im_three_channels_cpu,coor_3d_data_cpu,crop_coor_data_cpu,filename = data
     im_three_channels = im_three_channels.to(device)
-    #coor_3d_data = coor_3d_data_cpu.to(device)
-    #crop_coor_data = crop_coor_data_cpu.to(device)
-    #crop_split = crop_coor_data[:,0,[0,2,4,6,8,10]]
-    #proj_params = proj_params_cpu.to(device)
     pose_recon_b, pose_recon_s1, pose_recon_s2 = model(im_three_channels)
     _,axs = plt.subplots(nrows=1, ncols=3)
     axs[0].imshow(im_three_channels[0,0,:,:].cpu(), cmap = 'gray')
@@ -651,5 +645,4 @@ with torch.no_grad():
     axs[2].scatter(pose_recon_s2[0,0,0:12].cpu(), pose_recon_s2[0,1,0:12].cpu(), s=0.07, c='red', alpha=0.6)
     axs[2].grid(False)
     axs[2].set_axis_off()
-    #plt.savefig('test/test.png')
     plt.show()
