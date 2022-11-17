@@ -32,7 +32,7 @@ torch.multiprocessing.set_sharing_strategy('file_system')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-e','--epochs',default=1, type=int, help='number of epochs to train the VAE for')
-parser.add_argument('-o','--output_dir', default="validations", type=str, help='path to store output images and plots')
+parser.add_argument('-s','--stimulus', default="fs", type=str, help='stimulus corresponding to the validation data')
 parser.add_argument('-p','--proj_params', default="proj_params_101019_corrected_new", type=str, help='path to calibrated camera parameters')
 parser.add_argument('-d','--date_experiment', default='220916', type=str, help='path to input data folder')
 parser.add_argument('-m','--model_file', default='resnet_pose_220904_best_lambda_5', type=str, help='path to input data folder')
@@ -45,7 +45,7 @@ args = vars(parser.parse_args())
 
 proj_params_path = args['proj_params']
 epochs = args['epochs']
-output_dir = args['output_dir']
+stimulus_dir = args['stimulus']
 model_file = args['model_file']
 date = args['date_experiment']
 proj_params = sio.loadmat(proj_params_path)
@@ -68,8 +68,6 @@ batch_size = 350*n_cuda
   #print("Using " + str(n_cuda) + " GPUs!")
 model = nn.DataParallel(model)
 
-if (not os.path.isdir(output_dir)):
-    os.mkdir(output_dir)
 
 if (not torch.cuda.is_available()):
     model.load_state_dict(torch.load(model_file, map_location=torch.device('cpu')))
@@ -473,7 +471,6 @@ def validate(model, dataloader, proj_params):
         #for i, data in tqdm(enumerate(dataloader), total=int(len(val_data)/dataloader.batch_size)):
         for i, data in enumerate(dataloader):
             for p in range(0,1): 
-                print(i,flush=True)
                 im_three_channels_cpu,coor_3d_data_cpu,crop_coor_data_cpu,filename = data
                 im_three_channels = im_three_channels_cpu.to(device)
                 coor_3d_data = coor_3d_data_cpu.to(device)
@@ -542,7 +539,7 @@ def validate(model, dataloader, proj_params):
                 loss_filenames = []
                 if (len(loss_idx.nonzero()) > 0):
                     [loss_filenames.append(filename[element]) for element in loss_idx.nonzero()]
-                    save_images(pose_recon_b[loss_idx,:,:], pose_recon_s1[loss_idx,:,:], pose_recon_s2[loss_idx,:,:], pose_data_b[loss_idx,:,:].cpu(), pose_data_s1[loss_idx,:,:].cpu(), pose_data_s2[loss_idx,:,:].cpu(), im_b, im_s1, im_s2, counter, loss_filenames, output_dir)
+                    #save_images(pose_recon_b[loss_idx,:,:], pose_recon_s1[loss_idx,:,:], pose_recon_s2[loss_idx,:,:], pose_data_b[loss_idx,:,:].cpu(), pose_data_s1[loss_idx,:,:].cpu(), pose_data_s2[loss_idx,:,:].cpu(), im_b, im_s1, im_s2, counter, loss_filenames, output_dir)
                 counter = counter + im_b.shape[0]
                 loss = torch.sum(torch.sum(pose_loss))
                 pose_loss_array.append(pose_loss)
@@ -550,60 +547,6 @@ def validate(model, dataloader, proj_params):
                 all_filenames.append(filename)
                 running_loss += loss.item()
                 
-                # save the last batch input and output of every epoch
-                if i == int(len(val_data)/dataloader.batch_size) - 1:
-                    num_rows = 8
-                    im_b = im_three_channels[:,0,:,:]
-                    im_s1 = im_three_channels[:,1,:,:]
-                    im_s2 = im_three_channels[:,2,:,:]
-                    images_b = im_b.view(batch_size,1,imageSizeY,imageSizeX).cpu()
-                    images_s1 = im_s1.view(batch_size,1,imageSizeY,imageSizeX).cpu()
-                    images_s2 = im_s2.view(batch_size,1,imageSizeY,imageSizeX).cpu()
-                    _,axs = plt.subplots(nrows=6, ncols=8)
-                    #perm = torch.randperm(images_b.size(0))
-                    #idx = perm[:8]#*0 + max_idx
-                    idx = torch.arange(0,8)
-
-                    # Overlay pose
-                    for m in range(0,8):
-                        axs[1,m].imshow(images_b[idx[m],0,:,:].cpu(), cmap='gray')
-                        axs[1,m].scatter(pose_recon_b[idx[m],0,:].cpu(), pose_recon_b[idx[m],1,:].cpu(), s=0.07, c='green', alpha=0.6)
-                        axs[1,m].grid(False)
-                        axs[1,m].set_axis_off()
-
-                    for m in range(0,8):
-                        axs[0,m].imshow(images_b[idx[m],0,:,:].cpu(), cmap='gray')
-                        axs[0,m].scatter(pose_data_b[idx[m],0,0:12].cpu(), pose_data_b[idx[m],1,0:12].cpu(), s=0.07, c='red', alpha=0.6)
-             #          axs[0,m].scatter(eye_coor_data[m,0,0:2].cpu(), eye_coor_data[m,1,0:2].cpu(), s=0.07, c='green', alpha=0.6)
-                        axs[0,m].grid(False)
-                        axs[0,m].set_axis_off()
-                    for m in range(0,8):
-                        axs[3,m].imshow(images_s1[idx[m],0,:,:].cpu(), cmap='gray')
-                        axs[3,m].scatter(pose_recon_s1[idx[m],0,:].cpu(), pose_recon_s1[idx[m],1,:].cpu(), s=0.07, c='green', alpha=0.6)
-                        axs[3,m].grid(False)
-                        axs[3,m].set_axis_off()
-
-                    for m in range(0,8):
-                        axs[2,m].imshow(images_s1[idx[m],0,:,:].cpu(), cmap='gray')
-                        axs[2,m].scatter(pose_data_s1[idx[m],0,0:12].cpu(), pose_data_s1[idx[m],1,0:12].cpu(), s=0.07, c='red', alpha=0.6)
-              #         axs[2,m].scatter(eye_coor_data[m,0,2:4].cpu(), eye_coor_data[m,1,2:4].cpu(), s=0.07, c='green', alpha=0.6)
-                        axs[2,m].grid(False)
-                        axs[2,m].set_axis_off()
-
-                    for m in range(0,8):
-                        axs[5,m].imshow(images_s2[idx[m],0,:,:].cpu(), cmap='gray')
-                        axs[5,m].scatter(pose_recon_s2[idx[m],0,:].cpu(), pose_recon_s2[idx[m],1,:].cpu(), s=0.07, c='green', alpha=0.6)
-                        axs[5,m].grid(False)
-                        axs[5,m].set_axis_off()
-
-                    for m in range(0,8):
-                        axs[4,m].imshow(images_s2[idx[m],0,:,:].cpu(), cmap='gray')
-                        axs[4,m].scatter(pose_data_s2[idx[m],0,0:12].cpu(), pose_data_s2[idx[m],1,0:12].cpu(), s=0.07, c='red', alpha=0.6)
-               #        axs[4,m].scatter(eye_coor_data[m,0,4:6].cpu(), eye_coor_data[m,1,4:6].cpu(), s=0.07, c='green', alpha=0.6)
-                        axs[4,m].grid(False)
-                        axs[4,m].set_axis_off()
-                    plt.savefig(output_dir + "/epoch_" + str(idx[0]) + ".svg")
-                    plt.close()
     val_loss = running_loss/len(dataloader.dataset)
     return val_loss, pose_loss_array, reconstructed_pose, recon_pose_b_list, recon_pose_s1_list, recon_pose_s2_list, all_filenames
 
@@ -616,7 +559,7 @@ recon_pose_s1_list = []
 recon_pose_s2_list = []
 all_filenames = []
 counter = 0
-im_folder = '../validation_files/'
+im_folder = '../validation_files/' + stimulus_dir
 im_files = os.listdir(im_folder + 'images_real')
 print('Found ' + str(len(im_files)) + ' files')
 data_index = random.randrange(0,len(im_files))
