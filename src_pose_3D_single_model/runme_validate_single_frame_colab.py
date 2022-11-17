@@ -646,4 +646,5 @@ with torch.no_grad():
     axs[2].scatter(pose_recon_s2[0,0,0:12].cpu(), pose_recon_s2[0,1,0:12].cpu(), s=0.07, c='red', alpha=0.6)
     axs[2].grid(False)
     axs[2].set_axis_off()
+    plt.rcParams["figure.figsize"] = (21,7)
     plt.show()
