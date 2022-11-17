@@ -619,6 +619,7 @@ all_filenames = []
 counter = 0
 im_folder = '../validation_files/'
 im_files = os.listdir(im_folder + 'images_real')
+print('Found ' + len(im_files) + ' files')
 data_index = random.randrange(0,len(im_files))
 image = Image.open(im_folder + 'images_real/' + im_files[data_index])
 image = transform(image)
