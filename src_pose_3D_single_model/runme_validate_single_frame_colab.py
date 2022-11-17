@@ -44,7 +44,6 @@ imageSizeY = 141
 args = vars(parser.parse_args())
 
 proj_params_path = args['proj_params']
-print(proj_params_path)
 epochs = args['epochs']
 output_dir = args['output_dir']
 model_file = args['model_file']
@@ -619,9 +618,10 @@ all_filenames = []
 counter = 0
 im_folder = '../validation_files/'
 im_files = os.listdir(im_folder + 'images_real')
-print('Found ' + len(im_files) + ' files')
+print('Found ' + str(len(im_files)) + ' files')
 data_index = random.randrange(0,len(im_files))
 image = Image.open(im_folder + 'images_real/' + im_files[data_index])
+print("Evaluating " + im_files[data_index] + " for pose prediction")
 image = transform(image)
 im_b = image[:,:141,:]
 im_s1 = image[:,141:282,:]
