@@ -1,4 +1,3 @@
-<img src="https://drive.google.com/uc?export=view&id=18sJP1Y8IO1_MiE-YkUmWXopiaHpVWJo8"
-style="float:center">
+![for_colab](https://user-images.githubusercontent.com/11651033/211620835-594097d9-6a96-4e37-99e8-2d827d3b232b.png)
 
 Readme in progress...
