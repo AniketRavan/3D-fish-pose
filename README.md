@@ -1,7 +1,8 @@
-***Rapid automated 3-D pose estimation of larval zebrafish using a physical model-trained neural network***
+# Rapid automated 3-D pose estimation of larval zebrafish using a physical model-trained neural network
 
 
 https://user-images.githubusercontent.com/11651033/222322371-a245c76f-491e-4fae-9ea1-d5bbe037ab19.mp4
+***Video: A larval zebrafish responding to an acoustic startle stimulus***
 
 
 
