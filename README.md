@@ -1,7 +1,7 @@
 ***Rapid automated 3-D pose estimation of larval zebrafish using a physical model-trained neural network***
 
 
-https://user-images.githubusercontent.com/11651033/222322371-a245c76f-491e-4fae-9ea1-d5bbe037ab19.mp4
+https://user-images.githubusercontent.com/11651033/222322371-a245c76f-491e-4fae-9ea1-d5bbe037ab19.mp4\
 
 ***Read the preprint on bioRxiv*** \
 https://www.biorxiv.org/content/10.1101/2023.01.06.522821v1?rss=1
